@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f6f6">
+  <title>YIHUI | Recipe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Nixie+One&amp;display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#f7f7f7; --paper:#fff; --ink:#181818; --muted:#757575; --hair:#dfdfdf; --subtle:#f1f1f1; --hover:#ebebeb; --danger:#8d2424; --radius:8px; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif; }
+    button,input,textarea,select { font:inherit; }
+    button { cursor:pointer; }
+    button:disabled { opacity:.45; cursor:not-allowed; }
+    button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible { outline:2px solid #777; outline-offset:3px; }
+    .display { font-family:"Nixie One",Georgia,"Times New Roman",serif; font-weight:400; }
+    .app { max-width:1320px; margin:auto; padding:27px 36px 52px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:15px; border-bottom:1px solid var(--hair); padding:0 0 20px; }
+    /* Type-only header keeps the file lightweight. */
+    .brand { display:inline-flex; align-items:center; justify-content:flex-start; min-width:0; text-decoration:none; }
+    .brand { font-size:24px; letter-spacing:.15em; line-height:1; color:var(--ink); }
+    .top-actions,.manage-actions,.detail-actions,.actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .admin-label { font-size:10px; letter-spacing:.17em; font-weight:750; color:#666; margin-right:4px; }
+    .btn { display:inline-flex; justify-content:center; align-items:center; border:1px solid #d4d4d4; border-radius:6px; background:var(--paper); color:var(--ink); padding:9px 14px; font-size:13px; line-height:1.4; font-weight:620; white-space:nowrap; }
+    .btn:hover { background:#ededed; }
+    .btn.primary { color:#fff; background:var(--ink); border-color:var(--ink); }
+    .btn.primary:hover { background:#3c3c3c; }
+    .btn.flat { border-color:transparent; background:transparent; }
+    .btn.flat:hover { border-color:#d4d4d4; background:#ededed; }
+    .btn.danger { color:var(--danger); border-color:#d5c2c2; }
+    .btn.small { padding:7px 11px; font-size:12px; }
+    /* Lifecycle actions are distinct from ordinary edit/delete controls. */
+    .btn.deprecate { background:#fff5e8; color:#905713; border-color:#e3c49a; }
+    .btn.deprecate:hover { background:#fbe7c9; }
+    .btn.revive { background:#eaf5ef; color:#256344; border-color:#a8cdb7; }
+    .btn.revive:hover { background:#d8ecdf; }
+    .btn.icon { height:35px; width:35px; padding:0; font-size:22px; line-height:1; }
+    .head { display:flex; align-items:end; justify-content:space-between; gap:18px; margin:34px 0 25px; }
+    .head h1 { margin:0; font-size:clamp(34px,4.2vw,54px); line-height:1.16; letter-spacing:-.035em; }
+    .head-side { display:flex; align-items:center; flex-wrap:wrap; justify-content:end; gap:12px; }
+    .count { color:var(--muted); font-size:12px; white-space:nowrap; }
+    .layout { display:grid; grid-template-columns:minmax(245px,310px) minmax(0,1fr); gap:18px; align-items:start; }
+    .sidebar,.detail { background:var(--paper); border:1px solid var(--hair); border-radius:var(--radius); }
+    .sidebar { position:sticky; top:18px; padding:15px; max-height:calc(100vh - 36px); display:flex; flex-direction:column; }
+    .search { width:100%; padding:11px 13px; background:#fafafa; border:1px solid var(--hair); border-radius:5px; outline:none; font-size:14px; }
+    .search:focus { border-color:#888; background:#fff; }
+    .filter-row { display:flex; flex-wrap:wrap; gap:5px; overflow:visible; padding:13px 0 15px; flex-shrink:0; }
+    .filter-row .chip { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+    .chip { padding:5px 10px; border:1px solid var(--hair); border-radius:4px; background:#fff; color:#686868; font-size:12px; white-space:nowrap; }
+    .chip.active { color:#fff; background:var(--ink); border-color:var(--ink); }
+    .result-caption { color:#828282; text-transform:uppercase; font-weight:650; letter-spacing:.10em; font-size:10px; padding:0 3px 8px; }
+    .recipe-list { overflow-y:auto; min-height:85px; scrollbar-width:thin; }
+    .recipe-item { text-align:left; border:1px solid transparent; border-bottom-color:#eee; background:#fff; width:100%; padding:12px 11px; display:block; border-radius:4px; margin-bottom:3px; }
+    .recipe-entry { display:flex; align-items:stretch; border-bottom:1px solid #eee; border-radius:4px; }
+    .recipe-entry .recipe-item { flex:1; min-width:0; border-bottom:0; margin-bottom:0; }
+    .recipe-handle { display:grid; place-items:center; flex:0 0 34px; padding:0; background:#fff; border:0; border-right:1px solid #eee; color:#777; font-size:23px; cursor:grab; touch-action:none; user-select:none; }
+    .recipe-handle:active { cursor:grabbing; }
+    .recipe-entry.dragging { opacity:.45; }
+    .recipe-entry.drop-target { box-shadow:inset 0 3px 0 #181818; background:#eee; }
+    .recipe-item:hover { background:#f4f4f4; }
+    .recipe-item.active { border-color:#d9d9d9; background:#f0f0f0; }
+    .recipe-name { font-size:14px; font-weight:680; line-height:1.4; }
+    .recipe-entry.is-deprecated .recipe-name, .detail .deprecated-title { text-decoration:line-through; text-decoration-thickness:1px; text-decoration-color:#888; color:#898989; }
+    .recipe-entry.is-deprecated .recipe-meta { color:#999; }
+    .deprecated-indicator { font-size:10px; color:#888; letter-spacing:.08em; text-transform:uppercase; font-weight:700; }
+    .deprecated-notice { font-size:12px; color:#666; border:1px solid #ddd; border-left:3px solid #888; padding:10px 12px; margin:0 0 20px; background:#fafafa; }
+    .recipe-meta { color:var(--muted); margin-top:4px; font-size:12px; }
+    .dot { margin:0 5px; }
+    .detail { padding:36px 42px 48px; min-height:470px; }
+    .detail-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .eyebrow { font-size:11px; color:#666; font-weight:680; letter-spacing:.12em; text-transform:uppercase; }
+    .detail h2 { font-size:clamp(30px,3.7vw,48px); line-height:1.14; letter-spacing:-.026em; margin:21px 0 16px; overflow-wrap:anywhere; }
+    .summary { color:#666; margin:0 0 22px; max-width:670px; line-height:1.65; }
+    .recipe-subtitle { display:flex; gap:8px; flex-wrap:wrap; color:#666; font-size:12px; margin:-4px 0 19px; }
+    .recipe-subtitle .dot { margin:0 1px; }
+    .content-grid { border-top:1px solid var(--hair); }
+    .content-grid { display:grid; grid-template-columns:minmax(210px,.85fr) minmax(0,1.15fr); gap:43px; padding-top:30px; }
+    h3 { font-size:11px; text-transform:uppercase; letter-spacing:.14em; font-weight:750; margin:0 0 20px; }
+    .ingredient { display:flex; gap:13px; align-items:baseline; padding:10px 0; border-bottom:1px solid #ededed; }
+    .amount { width:92px; flex-shrink:0; font-weight:750; font-size:14px; }
+    .ingredient-name { overflow-wrap:anywhere; }
+    .step { display:flex; gap:17px; padding:0 0 23px; }
+    .step-num { font-size:12px; width:24px; flex-shrink:0; color:#777; font-weight:750; letter-spacing:.03em; padding-top:2px; }
+    .step-text { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7; }
+    .notes { background:#f4f4f4; border-left:2px solid #666; padding:15px 17px; margin-top:12px; white-space:pre-wrap; line-height:1.65; }
+    .notes strong { display:block; margin-bottom:7px; font-size:10px; text-transform:uppercase; letter-spacing:.12em; }
+    .mini-empty { padding:17px 6px; color:var(--muted); font-size:13px; }
+    .empty-state { text-align:center; padding:95px 18px; color:var(--muted); }
+    .empty-state h2 { color:var(--ink); font-size:30px; margin:0 0 10px; }
+    .empty-state p { margin:0 0 18px; }
+    .footer { padding:18px 2px; color:#858585; font-size:11px; }
+    .modal-wrap { position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.55); padding:14px; }
+    .modal { width:min(780px,100%); max-height:min(95dvh,980px); overflow-y:auto; background:var(--paper); border:1px solid #d0d0d0; border-radius:9px; box-shadow:0 20px 90px rgba(0,0,0,.23); padding:26px 28px; }
+    .modal.narrow { width:min(410px,100%); }
+    .modal-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:25px; }
+    .modal h2 { font-size:29px; letter-spacing:-.025em; margin:0; }
+    .field { display:flex; flex-direction:column; gap:6px; margin-bottom:17px; }
+    .field label { font-size:12px; font-weight:720; }
+    .field input,.field textarea,.field select { background:#fff; width:100%; min-width:0; border:1px solid #d6d6d6; border-radius:5px; padding:10px 11px; font-size:14px; }
+    .field textarea { resize:vertical; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 17px; }
+    .field.full { grid-column:1/-1; }
+    .field-hint { color:#858585; font-size:12px; }
+    .section-edit { border-top:1px solid var(--hair); padding-top:20px; margin:8px 0 23px; }
+    .section-edit-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+    .section-edit-head h3 { margin:0; }
+    .edit-line { display:grid; grid-template-columns:28px 115px minmax(0,1fr) 35px; gap:8px; margin-bottom:9px; align-items:start; }
+    .edit-line.step-line { grid-template-columns:28px minmax(0,1fr) 35px; }
+    .edit-line input,.edit-line textarea { width:100%; min-width:0; padding:10px; background:#fff; border:1px solid #d6d6d6; border-radius:5px; }
+    .edit-line textarea { min-height:70px; resize:vertical; }
+    .draft-grip { align-self:stretch; display:grid;place-items:center;min-width:24px;background:transparent;border:1px solid transparent;border-radius:4px;color:#888;cursor:grab;touch-action:none;user-select:none;font-size:21px;padding:0; }
+    .draft-grip:hover,.draft-grip:focus-visible {background:#f2f2f2;border-color:#ddd;color:#333} .draft-grip:active{cursor:grabbing}
+    .edit-line.draft-dragging {opacity:.4} .edit-line.draft-drop-target {box-shadow:inset 0 3px 0 #181818;background:#f3f3f3}
+
+    .sort-ghost{position:fixed!important;z-index:9999!important;pointer-events:none!important;box-sizing:border-box;background:white!important;border:1px solid #bdbdbd!important;border-radius:7px!important;box-shadow:0 15px 32px #0003!important;opacity:.96;transform:rotate(.5deg);overflow:hidden;}
+    .sort-slot{box-sizing:border-box;flex:none;border:1.5px dashed #aaa;background:#ededed;border-radius:6px;min-height:25px;transition:background .12s;}
+    .sort-source{display:none!important;}
+    .category-grip,.recipe-handle,.draft-grip{color:#555!important;cursor:grab!important;}
+    .category-grip:active,.recipe-handle:active,.draft-grip:active{cursor:grabbing!important;}
+    .modal-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; border-top:1px solid var(--hair); padding:18px 0 2px; position:sticky; bottom:-26px; background:#fff; }
+    .category-row { display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid var(--hair); padding:13px 0; }
+    .category-info { flex:1; min-width:0; }
+    .category-name { font-weight:650; overflow-wrap:anywhere; }
+    .category-count { font-size:12px; color:var(--muted); }
+    .category-edit { display:flex; flex:1; gap:7px; min-width:0; align-items:center; }
+    .category-edit input { min-width:0; flex:1; padding:9px 10px; border:1px solid var(--hair); border-radius:5px; }
+    .category-add { display:flex; gap:8px; align-items:start; margin-bottom:21px; }
+    .category-add input { min-width:0; flex:1; border:1px solid var(--hair); border-radius:5px; padding:10px 11px; font-size:14px; }
+    .category-add button { flex-shrink:0; }
+    .category-controls { display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; }
+    .category-grip { color:#777; touch-action:none; user-select:none; cursor:grab; border:1px solid transparent; border-radius:5px; background:transparent; min-width:35px; height:37px; font-size:24px; display:grid; place-items:center; flex:none; }
+    .category-grip:hover,.category-grip:focus-visible { background:var(--subtle); border-color:var(--hair); }
+    .category-grip:active { cursor:grabbing; }
+    .category-row { position:relative; }
+    .category-row.dragging { opacity:.45; }
+    .category-row.drop-target { box-shadow: inset 0 3px 0 var(--ink); background:#f3f3f3; }
+    .help { color:var(--muted); font-size:12px; line-height:1.5; margin:0 0 18px; }
+    .planner-add { display:flex; gap:8px; align-items:stretch; margin:2px 0 16px; }
+    .planner-add select { flex:1; width:100%; min-width:0; padding:10px; border:1px solid var(--hair); border-radius:5px; background:white; }
+    .plan-stats { display:flex; gap:8px 20px; flex-wrap:wrap; padding:13px 0; border-top:1px solid var(--hair); border-bottom:1px solid var(--hair); margin-bottom:7px; font-size:12px; }
+    .plan-stats strong { font-size:14px; }
+    .planner-task { display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:10px; align-items:center; padding:13px 0; border-bottom:1px solid #e9e9e9; }
+    .planner-task.done .plan-task-name { text-decoration:line-through; color:#999; }
+    .plan-check { width:19px; height:19px; accent-color:#242424; cursor:pointer; }
+    .plan-task-name { font-weight:660; overflow-wrap:anywhere; }
+    .plan-task-meta { font-size:12px; color:#777; }
+    .plan-task-meta.warning { color:#8d2424; }
+    .plan-task-controls { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
+    .plan-task-controls input[type=number] { width:57px; padding:7px 6px; border:1px solid var(--hair); border-radius:4px; }
+    .plan-task-controls .btn.small { padding:7px 9px; }
+    .plan-task-controls label { color:#777; font-size:11px; display:flex; align-items:center; gap:4px; }
+    .plan-section-title { margin:19px 0 9px; font-size:11px; font-weight:750; letter-spacing:.12em; text-transform:uppercase; }
+    .plan-empty { font-size:13px; color:#777; padding:23px 0; }
+    @media(max-width:710px){ .planner-task { grid-template-columns:26px minmax(0,1fr); } .plan-task-controls { grid-column:2; justify-content:flex-start; } .category-controls { flex-wrap:nowrap; } }
+    .form-error { color:var(--danger); font-size:12px; min-height:18px; margin-top:-6px; }
+    .hidden { display:none!important; }
+    .toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:#1c1c1c; color:#fff; padding:10px 16px; border-radius:5px; font-size:13px; box-shadow:0 7px 24px #0003; z-index:50; }
+    .confirm-copy { color:#5d5d5d; line-height:1.65; }
+    @media (max-width:950px) { .app { padding:22px 20px 40px; } .layout { grid-template-columns:245px minmax(0,1fr); } .detail { padding:29px 27px; } .content-grid { gap:26px; } }
+    @media (max-width:710px) {
+      .app { padding:18px 13px 34px; }
+      .topbar { padding-bottom:16px; }
+      .brand img { width:122px; }
+      .head { margin:25px 0 18px; align-items:start; }
+      .head h1 { font-size:37px; }
+      .head-side { gap:10px; }
+      .manage-actions { width:100%; order:2; }
+      .layout { display:block; }
+      .sidebar { position:static; max-height:none; margin-bottom:12px; padding:12px; }
+      .recipe-list { max-height:240px; }
+      .detail { min-height:320px; padding:24px 19px 32px; }
+      .detail h2 { font-size:35px; margin:16px 0; }
+      .content-grid { display:block; }
+      .content-grid section+section { margin-top:30px; }
+      .ingredient { padding:11px 0; }
+      .modal { padding:19px 16px; }
+      .modal-head { margin-bottom:17px; }
+      .form-grid { display:block; }
+      .edit-line { grid-template-columns:24px 82px minmax(0,1fr) 35px; gap:6px; }
+    }
+
+    /* One compact utility menu keeps management functions out of the primary actions. */
+    .tools-wrap { position:relative; }
+    .tools-trigger { gap:9px; align-items:center; }
+    .tools-trigger .chevron { display:block; width:12px; height:12px; flex:none; transition:transform .16s ease; color:#666; }
+    .tools-trigger[aria-expanded="true"] .chevron { transform:rotate(180deg); }
+    .sidebar-workflow { margin-top:11px; margin-bottom:4px; }
+    .sidebar-workflow-label { margin-bottom:7px; font-size:10px; text-transform:uppercase; color:#888; font-weight:700; letter-spacing:.11em; }
+    .planner-link { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 11px; width:100%; background:#f4f4f4; color:#202020; text-align:left; border:1px solid #ebebeb; border-radius:5px; font-size:13px; font-weight:640; }
+    .planner-link:hover { background:#ebebeb; border-color:#dcdcdc; }
+    .planner-link svg { flex:none; }
+    .planner-link small { display:block; color:#797979; font-weight:400; font-size:11px; margin-top:2px; }
+    .tools-menu { position:absolute; right:0; top:calc(100% + 8px); z-index:15; width:245px; padding:8px; background:#fff; border:1px solid #d9d9d9; border-radius:7px; box-shadow:0 13px 35px #0000001a; text-align:left; }
+    .tools-section-label { font-size:10px; font-weight:750; color:#858585; letter-spacing:.12em; text-transform:uppercase; padding:9px 11px 6px; }
+    .tools-option { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; padding:10px 11px; background:transparent; color:#222; border:0; border-radius:4px; text-align:left; font-size:13px; font-weight:550; }
+    .tools-option:hover,.tools-option:focus-visible { background:#f0f0f0; }
+    .tools-hint { font-size:11px; color:#888; font-weight:400; white-space:nowrap; }
+    .tools-rule { height:1px; background:#ececec; margin:7px 4px; }
+    @media(max-width:450px) { .tools-menu { right:0; width:min(245px,calc(100vw - 26px)); } }
+    @media (max-width:400px) { .head { display:block; } .head-side { justify-content:start; margin-top:10px; } .count { order:1; } .manage-actions { order:2; } .btn.small { padding:7px 10px; } }
+    .sync-panel { display:flex; gap:12px; align-items:center; flex-wrap:wrap; font-size:12px; color:#666; margin:-12px 0 18px; min-height:26px; }
+    .sync-panel[data-state="ok"] { color:#52705b; }
+    .sync-panel[data-state="error"] { color:#942a2a; }
+    .sync-panel[data-state="loading"] { color:#756a44; }
+  </style>
+</head>
+<body style="">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand display" aria-label="YIHUI">YIHUI</div>
+      <div class="top-actions">
+        <span id="adminLabel" class="admin-label hidden">ADMIN MODE</span>
+        <button type="button" class="btn" id="adminBtn">Admin</button>
+        <button type="button" class="btn hidden" id="lockBtn">Lock</button>
+      </div>
+    </header>
+    <section class="head">
+      <h1 class="display">Recipe</h1>
+      <div class="head-side">
+        <span class="count" id="totalCount">22 active recipes</span>
+        <div class="tools-wrap" id="toolsWrap">
+          <button type="button" class="btn small tools-trigger" id="toolsBtn" aria-expanded="false" aria-controls="toolsMenu">Tools <svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3.75 6 4.25 4.25L12.25 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <div class="tools-menu hidden" id="toolsMenu" role="group" aria-label="Recipe tools">
+            <div class="tools-section-label">Print</div>
+            <button type="button" class="tools-option" id="bookletBtn"><span>Print booklet</span><span class="tools-hint">All recipes</span></button>
+            <div id="manageActions" class="hidden">
+              <div class="tools-rule"></div>
+              <div class="tools-section-label">Manage</div>
+              <button type="button" class="tools-option" id="categoriesBtn">Categories</button>
+              <div class="tools-rule"></div>
+              <div class="tools-section-label">Files &amp; backup</div>
+              <button type="button" class="tools-option" id="portableBtn"><span>Save HTML</span><span class="tools-hint">Shareable copy</span></button>
+              <button type="button" class="tools-option" id="exportBtn"><span>Export JSON</span><span class="tools-hint">Backup</span></button>
+              <button type="button" class="tools-option" id="importBtn">Import JSON</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn small primary hidden" id="newBtn">+ New recipe</button>
+      </div>
+    </section>
+    <div class="sync-panel" aria-live="polite"><span id="syncStatus">Starter recipes · Firebase not connected</span><button type="button" id="seedBtn" class="btn small hidden">Initialize cloud recipes</button></div>
+    <main class="layout">
+      <aside class="sidebar">
+        <input id="search" type="search" class="search" placeholder="Search recipes or ingredients" autocomplete="off" aria-label="Search recipes" value="">
+        <div class="sidebar-workflow">
+          <button type="button" id="plannerBtn" class="planner-link"><span>Prep planner<small>Organize batch preparation</small></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+        </div>
+        <div class="filter-row" id="filters" aria-label="Recipe categories"><button type="button" class="chip " data-cat="All">All</button><button type="button" class="chip " data-cat="Syrups">Syrups</button><button type="button" class="chip " data-cat="Mocktail Prep">Mocktail Prep</button><button type="button" class="chip " data-cat="Cold Brew">Cold Brew</button><button type="button" class="chip " data-cat="Other">Other</button><button type="button" class="chip active" data-cat="Signature Drinks">Signature Drinks</button></div>
+        <div class="result-caption" id="resultCount">9 results · Drag ⠿ to reorder</div>
+        <div class="recipe-list" id="recipeList"><div class="recipe-entry " data-recipe-row="f4cce300-0386-4f37-8710-a9cbe68c70d7"><button type="button" class="recipe-handle" data-recipe-drag="f4cce300-0386-4f37-8710-a9cbe68c70d7" aria-label="Reorder Cloudy. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item " data-recipe="f4cce300-0386-4f37-8710-a9cbe68c70d7"><div class="recipe-name">Cloudy</div><div class="recipe-meta">Signature Drinks</div></button></div><div class="recipe-entry " data-recipe-row="73f8cb79-bca2-40ca-8d82-ba85e525e1f5"><button type="button" class="recipe-handle" data-recipe-drag="73f8cb79-bca2-40ca-8d82-ba85e525e1f5" aria-label="Reorder Bumble bee. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item " data-recipe="73f8cb79-bca2-40ca-8d82-ba85e525e1f5"><div class="recipe-name">Bumble bee</div><div class="recipe-meta">Signature Drinks</div></button></div><div class="recipe-entry " data-recipe-row="3a141913-0241-4150-8743-d83ef7c9b1a8"><button type="button" class="recipe-handle" data-recipe-drag="3a141913-0241-4150-8743-d83ef7c9b1a8" aria-label="Reorder Fist Bump. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item " data-recipe="3a141913-0241-4150-8743-d83ef7c9b1a8"><div class="recipe-name">Fist Bump</div><div class="recipe-meta">Signature Drinks</div></button></div><div class="recipe-entry " data-recipe-row="b46752a0-6b13-419f-b8a4-687a14fadd19"><button type="button" class="recipe-handle" data-recipe-drag="b46752a0-6b13-419f-b8a4-687a14fadd19" aria-label="Reorder Jasmine Latte. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item " data-recipe="b46752a0-6b13-419f-b8a4-687a14fadd19"><div class="recipe-name">Jasmine Latte</div><div class="recipe-meta">Signature Drinks</div></button></div><div class="recipe-entry " data-recipe-row="374dea45-841a-4924-83f6-3cd9e83bd9bd"><button type="button" class="recipe-handle" data-recipe-drag="374dea45-841a-4924-83f6-3cd9e83bd9bd" aria-label="Reorder Mont Blanc. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item " data-recipe="374dea45-841a-4924-83f6-3cd9e83bd9bd"><div class="recipe-name">Mont Blanc</div><div class="recipe-meta">Signature Drinks</div></button></div><div class="recipe-entry " data-recipe-row="3ffadc6a-34f6-4e1b-a101-8cdc424cb427"><button type="button" class="recipe-handle" data-recipe-drag="3ffadc6a-34f6-4e1b-a101-8cdc424cb427" aria-label="Reorder Pumpkin Spice Latte. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item " data-recipe="3ffadc6a-34f6-4e1b-a101-8cdc424cb427"><div class="recipe-name">Pumpkin Spice Latte</div><div class="recipe-meta">Signature Drinks</div></button></div><div class="recipe-entry " data-recipe-row="306c0ef3-5b56-4121-b86e-f25f60240993"><button type="button" class="recipe-handle" data-recipe-drag="306c0ef3-5b56-4121-b86e-f25f60240993" aria-label="Reorder Flower Frog. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item " data-recipe="306c0ef3-5b56-4121-b86e-f25f60240993"><div class="recipe-name">Flower Frog</div><div class="recipe-meta">Signature Drinks</div></button></div><div class="recipe-entry " data-recipe-row="9c157ad5-1abe-4022-93fe-9f4dccb2e538"><button type="button" class="recipe-handle" data-recipe-drag="9c157ad5-1abe-4022-93fe-9f4dccb2e538" aria-label="Reorder Pumpkin Cream Hojicha. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item active" data-recipe="9c157ad5-1abe-4022-93fe-9f4dccb2e538"><div class="recipe-name">Pumpkin Cream Hojicha</div><div class="recipe-meta">Signature Drinks</div></button></div><div class="recipe-entry is-deprecated" data-recipe-row="a94a0085-55af-4ce5-b1fa-bfbe2b41b1cd"><button type="button" class="recipe-handle" data-recipe-drag="a94a0085-55af-4ce5-b1fa-bfbe2b41b1cd" aria-label="Reorder Iced Coconut Latte. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button><button type="button" class="recipe-item " data-recipe="a94a0085-55af-4ce5-b1fa-bfbe2b41b1cd"><div class="recipe-name">Iced Coconut Latte</div><div class="recipe-meta">Signature Drinks<span class="deprecated-indicator"> · Deprecated</span></div></button></div></div>
+      </aside>
+      <article class="detail" id="detail" aria-live="polite">
+        <div class="detail-top">
+          <div class="eyebrow">Signature Drinks</div>
+          <div class="detail-actions">
+            <button type="button" class="btn small" data-action="print">Print recipe</button>
+             <button type="button" class="btn small deprecate" data-action="status">Deprecate</button><button type="button" class="btn small" data-action="duplicate">Duplicate</button><button type="button" class="btn small" data-action="edit">Edit</button><button type="button" class="btn small danger" data-action="delete">Delete</button>
+          </div>
+        </div>
+        <h2 class="display ">Pumpkin Cream Hojicha</h2>
+        
+        
+        <div class="content-grid">
+          <section><h3>Ingredients</h3><div class="ingredient"><span class="amount">-</span><span class="ingredient-name">-</span></div></section>
+          <section><h3>Method</h3><div class="step"><div class="step-num">01</div><div class="step-text">Base: 150g oat milk + hojicha</div></div><div class="step"><div class="step-num">02</div><div class="step-text">Make pumpkin cream top:
+30g pumpkin syrup + 60g heavy cream + dash of cinnamon powder</div></div><div class="step"><div class="step-num">03</div><div class="step-text">Top off with cream top, no garnish.</div></div></section>
+        </div></article>
+    </main>
+    <div class="footer" id="footer">Recipes sync through Firebase when connected. Prep planner checklists remain on this device.</div>
+  </div>
+
+  <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+
+  <div id="loginWrap" class="modal-wrap hidden" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal narrow">
+      <div class="modal-head">
+        <h2 class="display" id="loginTitle">Admin access</h2>
+        <button type="button" class="btn icon" id="closeLogin" aria-label="Close">×</button>
+      </div>
+      <form id="loginForm">
+        <div class="field">
+          <label for="adminEmail">Admin email</label>
+          <input id="adminEmail" type="email" required autocomplete="username" placeholder="Email address">
+        </div>
+        <div class="field">
+          <label for="adminPassword">Password</label>
+          <input id="adminPassword" type="password" required autocomplete="current-password" spellcheck="false">
+        </div>
+        <div id="loginError" class="form-error" role="alert" aria-live="polite"></div>
+        <div class="actions" style="justify-content:flex-end; margin-top:16px">
+          <button type="button" class="btn" id="cancelLogin">Cancel</button>
+          <button type="submit" class="btn primary">Unlock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="editorWrap" class="modal-wrap hidden" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 class="display" id="editorTitle">New recipe</h2>
+        <button type="button" class="btn icon" id="closeEditor" aria-label="Close">×</button>
+      </div>
+      <form id="recipeForm">
+        <div class="form-grid">
+          <div class="field"><label for="recipeName">Recipe name *</label><input id="recipeName" maxlength="110" required="" placeholder="Recipe name" value=""></div>
+          <div class="field"><label for="recipeCategory">Category *</label><select id="recipeCategory" required=""><option value="Syrups">Syrups</option><option value="Mocktail Prep">Mocktail Prep</option><option value="Cold Brew">Cold Brew</option><option value="Other">Other</option><option value="Signature Drinks">Signature Drinks</option></select></div>
+          <div class="field"><label for="recipeTime">Total prep (minutes)</label><input id="recipeTime" type="number" min="1" max="10080" step="1" placeholder="15" value=""><span class="field-hint">Elapsed time, including steeping or chilling.</span></div>
+          <div class="field"><label for="recipeHandsOn">Hands-on time (minutes)</label><input id="recipeHandsOn" type="number" min="0" max="10080" step="1" placeholder="Optional" value=""><span class="field-hint">Leave blank if the full prep needs attention.</span></div>
+          <div class="field full"><label for="recipeDescription">Description</label><textarea id="recipeDescription" rows="2" maxlength="450"></textarea></div>
+        </div>
+        <div class="section-edit">
+          <div class="section-edit-head"><h3>Ingredients</h3><button class="btn small" type="button" id="addIngredient">+ Ingredient</button></div>
+          <div id="ingredientEditor"><div class="edit-line" data-draft-row="0"><button type="button" class="draft-grip" data-draft-grip="ingredient" data-draft-index="0" aria-label="Reorder ingredient 1; drag or press up/down arrow keys" title="Drag to reorder · ↑ ↓">⠿</button><input data-ing="0" data-field="amount" aria-label="Ingredient 1 amount" placeholder="Amount" value=""><input data-ing="0" data-field="name" aria-label="Ingredient 1 name" placeholder="Ingredient" value=""><button type="button" class="btn icon small" data-remove-ing="0" aria-label="Remove ingredient">×</button></div></div>
+        </div>
+        <div class="section-edit">
+          <div class="section-edit-head"><h3>Method</h3><button class="btn small" type="button" id="addStep">+ Step</button></div>
+          <div id="stepEditor"><div class="edit-line step-line" data-draft-row="0"><button type="button" class="draft-grip" data-draft-grip="step" data-draft-index="0" aria-label="Reorder method step 1; drag or press up/down arrow keys" title="Drag to reorder · ↑ ↓">⠿</button><textarea data-step="0" aria-label="Step 1" placeholder="Step 1"></textarea><button type="button" class="btn icon small" data-remove-step="0" aria-label="Remove step">×</button></div><div class="edit-line step-line" data-draft-row="1"><button type="button" class="draft-grip" data-draft-grip="step" data-draft-index="1" aria-label="Reorder method step 2; drag or press up/down arrow keys" title="Drag to reorder · ↑ ↓">⠿</button><textarea data-step="1" aria-label="Step 2" placeholder="Step 2"></textarea><button type="button" class="btn icon small" data-remove-step="1" aria-label="Remove step">×</button></div><div class="edit-line step-line" data-draft-row="2"><button type="button" class="draft-grip" data-draft-grip="step" data-draft-index="2" aria-label="Reorder method step 3; drag or press up/down arrow keys" title="Drag to reorder · ↑ ↓">⠿</button><textarea data-step="2" aria-label="Step 3" placeholder="Step 3"></textarea><button type="button" class="btn icon small" data-remove-step="2" aria-label="Remove step">×</button></div></div>
+        </div>
+        <div class="field"><label for="recipeNotes">Staff notes / QC</label><textarea id="recipeNotes" rows="3"></textarea></div>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="cancelEditor">Cancel</button>
+          <button type="submit" class="btn primary" id="saveRecipe">Save recipe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="categoryWrap" class="modal-wrap hidden" role="dialog" aria-modal="true" aria-labelledby="categoriesTitle">
+    <div class="modal" style="width:min(610px,100%)">
+      <div class="modal-head">
+        <h2 class="display" id="categoriesTitle">Categories</h2>
+        <button type="button" class="btn icon" id="closeCategories" aria-label="Close">×</button>
+      </div>
+      <form id="addCategoryForm" novalidate="">
+        <label for="newCategoryName" class="eyebrow" style="display:block;margin-bottom:8px">New category</label>
+        <div class="category-add">
+          <input id="newCategoryName" maxlength="55" required="" placeholder="Category name" autocomplete="off" value="">
+          <button type="submit" class="btn primary">Add category</button>
+        </div>
+      </form>
+      <div id="categoryError" class="form-error" role="alert" aria-live="polite"></div>
+      <p class="help">Drag the handle to reorder categories. On a keyboard, focus the handle and press ↑ or ↓. “All” stays first.</p>
+      <div id="categoryList">
+        <div class="category-row" data-cat-row="0">
+          <button type="button" class="category-grip" data-cat-drag="0" aria-label="Reorder Syrups. Drag or use up and down arrow keys" title="Drag to reorder">⠿</button>
+          
+            <div class="category-info"><div class="category-name">Syrups</div><div class="category-count">10 recipes</div></div>
+            <div class="category-controls"><button type="button" class="btn small" data-cat-edit="0">Rename</button>
+              <button type="button" class="btn small danger" data-cat-remove="0">Delete</button></div>
+        </div>
+        <div class="category-row" data-cat-row="1">
+          <button type="button" class="category-grip" data-cat-drag="1" aria-label="Reorder Mocktail Prep. Drag or use up and down arrow keys" title="Drag to reorder">⠿</button>
+          
+            <div class="category-info"><div class="category-name">Mocktail Prep</div><div class="category-count">3 recipes</div></div>
+            <div class="category-controls"><button type="button" class="btn small" data-cat-edit="1">Rename</button>
+              <button type="button" class="btn small danger" data-cat-remove="1">Delete</button></div>
+        </div>
+        <div class="category-row" data-cat-row="2">
+          <button type="button" class="category-grip" data-cat-drag="2" aria-label="Reorder Cold Brew. Drag or use up and down arrow keys" title="Drag to reorder">⠿</button>
+          
+            <div class="category-info"><div class="category-name">Cold Brew</div><div class="category-count">1 recipe</div></div>
+            <div class="category-controls"><button type="button" class="btn small" data-cat-edit="2">Rename</button>
+              <button type="button" class="btn small danger" data-cat-remove="2">Delete</button></div>
+        </div>
+        <div class="category-row" data-cat-row="3">
+          <button type="button" class="category-grip" data-cat-drag="3" aria-label="Reorder Other. Drag or use up and down arrow keys" title="Drag to reorder">⠿</button>
+          
+            <div class="category-info"><div class="category-name">Other</div><div class="category-count">1 recipe</div></div>
+            <div class="category-controls"><button type="button" class="btn small" data-cat-edit="3">Rename</button>
+              <button type="button" class="btn small danger" data-cat-remove="3">Delete</button></div>
+        </div>
+        <div class="category-row" data-cat-row="4">
+          <button type="button" class="category-grip" data-cat-drag="4" aria-label="Reorder Signature Drinks. Drag or use up and down arrow keys" title="Drag to reorder">⠿</button>
+          
+            <div class="category-info"><div class="category-name">Signature Drinks</div><div class="category-count">0 recipes</div></div>
+            <div class="category-controls"><button type="button" class="btn small" data-cat-edit="4">Rename</button>
+              <button type="button" class="btn small danger" data-cat-remove="4">Delete</button></div>
+        </div></div>
+    </div>
+  </div>
+
+  <div id="categoryDeleteWrap" class="modal-wrap hidden" role="dialog" aria-modal="true" aria-labelledby="deleteCategoryTitle">
+    <div class="modal narrow">
+      <div class="modal-head"><h2 class="display" id="deleteCategoryTitle">Delete category?</h2><button type="button" class="btn icon" id="closeCategoryDelete" aria-label="Close">×</button></div>
+      <p class="confirm-copy" id="categoryDeleteCopy">Delete “Mocktail”?</p>
+      <div id="categoryReassignField" class="field hidden">
+        <label for="categoryReassign">Move recipes to</label>
+        <select id="categoryReassign" required=""><option value="Syrups">Syrups</option><option value="Mocktail Prep">Mocktail Prep</option></select>
+      </div>
+      <div class="actions" style="justify-content:flex-end; margin-top:23px">
+        <button type="button" class="btn" id="cancelCategoryDelete">Cancel</button>
+        <button type="button" class="btn danger" id="confirmCategoryDelete">Delete category</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="plannerWrap" class="modal-wrap hidden" role="dialog" aria-modal="true" aria-labelledby="plannerTitle">
+    <div class="modal" style="width:min(820px,100%)">
+      <div class="modal-head">
+        <h2 class="display" id="plannerTitle">Prep planner</h2>
+        <button type="button" class="btn icon" id="closePlanner" aria-label="Close">×</button>
+      </div>
+      <div class="planner-add">
+        <select id="planRecipe" aria-label="Recipe to add to prep plan"></select>
+        <button type="button" class="btn primary" id="planAdd">Add</button>
+      </div>
+      <p class="help">Longer passive prep is prioritized first, so steeping and chilling can run while other work gets done. Estimates assume one person and that hands-on work happens at the beginning of each recipe.</p>
+      <div id="planStats" class="plan-stats"></div>
+      <div class="plan-section-title">Prep order</div>
+      <div id="planList"></div>
+      <div class="modal-actions" style="justify-content:space-between">
+        <button type="button" class="btn small" id="planReset">Reset checklist</button>
+        <button type="button" class="btn small" id="planClear">Clear plan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmWrap" class="modal-wrap hidden" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal narrow">
+      <div class="modal-head"><h2 class="display" id="confirmTitle">Delete recipe?</h2><button type="button" class="btn icon" id="closeConfirm" aria-label="Close">×</button></div>
+      <p class="confirm-copy" id="confirmCopy"></p>
+      <div class="actions" style="justify-content:flex-end; margin-top:23px">
+        <button type="button" class="btn" id="cancelDelete">Cancel</button>
+        <button type="button" class="btn danger" id="confirmDelete">Delete recipe</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="embeddedRecipeData">{"categories":["Syrups","Mocktail Prep","Cold Brew","Other","Signature Drinks"],"recipes":[{"id":"53d4c167-698c-4114-915d-1b26054997d8","name":"Simple Syrup","category":"Syrups","time":"25 min","prepMinutes":25,"handsOnMinutes":15,"description":"Each batch makes 3 bottles of simple syrup","ingredients":[{"amount":"1125 g","name":"Sugar"},{"amount":"1125 g","name":"Water"},{"amount":"30g","name":"Lime juice"}],"steps":["Grab a cooking pot.","Put 1125g water in the pot.","Put 1125g sugar in the pot.","Heat up mixture using the induction stove.","Stir gently while heating up to prevent caramelization. Stir until all solids are dissolved.","Add Lime juice to the syrup and stir to mix well.","Bottle the syrup and wait to chill before refrigeration."],"notes":"","deprecated":false},{"id":"dc47441b-7607-4d61-8cf3-78d46b7c6f5f","name":"Honey Syrup","category":"Syrups","time":"10 min","prepMinutes":10,"handsOnMinutes":null,"description":"Each batch makes 1 bottle of honey syrup","ingredients":[{"amount":"400 g ","name":"Honey"},{"amount":"400g ","name":"Hot water"}],"steps":["Grab a Pyrex.","Put 400g Honey in the Pyrex.","Add 400g Hot water into the Pyrex.","Stir until consistent throughout the whole mixture.","Bottle the honey syrup."],"notes":"","deprecated":false},{"id":"3cdfe3e1-8c68-4570-9748-5b9d40fbc710","name":"Black Sesame Syrup","category":"Syrups","time":"15 min","prepMinutes":15,"handsOnMinutes":null,"description":"Each batch makes 1 squeeze bottle.","ingredients":[{"amount":"60 g","name":"black sesame paste"},{"amount":"90 g","name":"hot water"},{"amount":"300 g ","name":"vanilla syrup"}],"steps":["Scrape up the thick sesame paste settled at the bottom and mix thoroughly with the separated oil until smooth and evenly combined.","Put 60g black sesame paste in milk pitcher.","Add 90g hot water into the black sesame paste pitcher.","Stir and use the hot water to open up the paste. Use electric whisker to mix water with paste to achieve consistent mixture.","Add 300g vanilla syrup into the mixture.","Stir to mix well. Bottle into squeeze bottle."],"notes":"","deprecated":false},{"id":"94bae102-c287-439d-ac02-c7af1b43fcf6","name":"Jasmine Syrup","category":"Syrups","time":"50 min","prepMinutes":50,"handsOnMinutes":20,"description":"Each batch should fill 2-3 glass bottles.","ingredients":[{"amount":"300 g ","name":"jasmine tea leaves"},{"amount":"2700 g ","name":"hot water (185°F)"},{"amount":"approx. 1500 g ","name":"sugar"}],"steps":["Grab a Pyrex and a cooking pot.","Measure 2700g water using Pyrex (1000 + 1000 + 700) and put into cooking pot.","Heat up water using induction stove until 185°F","Put jasmine tea leaves into hot water. Gently stir to ensure even extraction.","Steep tea for 15min.","Strain out tea concentrate and measure the yield. (should be around 1500-1800g)","Measure sugar to be the same amount as the tea concentrate yield.","Mix sugar into tea concentrate. Make sure all sugar is dissolved."],"notes":"","deprecated":false},{"id":"d4f074c7-5d75-47da-9f82-448b9438d6a0","name":"Pumpkin Syrup (seasonal)","category":"Syrups","time":"15 min","prepMinutes":15,"handsOnMinutes":null,"description":"Each batch will fill a Pyrex. Stock the syrup into squeeze bottle as needed.","ingredients":[{"amount":"148 g","name":"brown sugar"},{"amount":"246 g","name":"hot water"},{"amount":"370 g","name":"pumpkin puree"},{"amount":"370 g","name":"pumpkin butter"}],"steps":["Measure 148g brown sugar into the Pyrex.","Add 246g hot water into the Pyrex. Stir and mix to make sure brown sugar is fully dissolved.","Open a pumpkin puree using can opener. Put 370g pumpkin puree (approx. full can) into the brown sugar mixture.","Measure and put 370g pumpkin butter into the mixture. (Close and store the jar is not fully used)","Stir and mix the mixture until consistent."],"notes":"","deprecated":false},{"id":"0ca1ea74-3511-4dc6-99d1-1e2d33ddcedf","name":"Apricot Jam","category":"Syrups","time":"15 min","prepMinutes":15,"handsOnMinutes":null,"description":"Each batch should fill 1 squeeze bottle.","ingredients":[{"amount":"400 g","name":"apricot jam"},{"amount":"40 g","name":"hot water"}],"steps":["Put 400g apricot jam into the mini blender.","Put 40g hot water into the mini blender.","Stir open the jam using a spoon.","Blend well until consistent."],"notes":"","deprecated":false},{"id":"172a5a02-72dc-46a8-b087-be5d7c9a8db1","name":"Guava Syrup","category":"Syrups","time":"15 min","prepMinutes":15,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"300 g","name":"guava jam"},{"amount":"150 g","name":"hot water"},{"amount":"55 g","name":"lemon juice"},{"amount":"55 g ","name":"simple syrup"}],"steps":["mix everything together using electrical whisk"],"notes":"","deprecated":true},{"id":"9113c075-eab1-4391-b254-995cd8351baa","name":"The Punch Prep","category":"Mocktail Prep","time":"480 min","prepMinutes":480,"handsOnMinutes":90,"description":"The following batch is 14x of the original batch to fulfill the current need. Adjust as business need.","ingredients":[{"amount":"28 pulls","name":"Andres Martinez Geisha espresso"},{"amount":"4200 ml","name":"boiling water"},{"amount":"168 g","name":"honey black tea leaves"},{"amount":"560 g","name":"lemon juice"},{"amount":"1680 g","name":"honey syrup"},{"amount":"7 g","name":"salt"},{"amount":"1750 g","name":"whole milk"},{"amount":"350 g","name":"heavy cream"},{"amount":"1400 g","name":"yakult"}],"steps":["Start prepping the Acid Base [AB]\n\nUsing the Pyrex to measure out 4200 water and put into cooking pot to bring to boil.","Measure out honey black tea leaves into Cambro container. Pour boiling water onto the tea leaves to start steeping for 15 minutes.","Ice bath the tea Cambro to quickly chill the tea to prevent overextraction.","Put 840g water and 840g honey into a cooking pot (AB pot) to make honey syrup.","Heat up the honey syrup and stir until consistent mixture.","Put 7g salt (14 scoops of the pinch spoon) into the AB pot.","Put 560g lemon juice into the AB Pot.","Put 28 pulls (56 shots) Martinez Geisha espresso shots into the AB pot.","Once the tea is chilled. Strain into AB pot. Stir and mix AB pot until consistent.\n\nAB pot is ready.","Measure 1400 g Yakult (about 24 bottles) into a Pyrex","Measure 350g heavy cream and 1750g milk into an empty Cambro (Dairy Base -- DB).","Pour Yakult into DB, and immediately slowly pour AB into DB.","Gently mix the final mixture to encourage consistent curdling. Let the mixture curdle for at least 1 hour room temp.","Strain out curdles using double filter and re-run filtering after the curdles has set the bed for clearer output."],"notes":"*Always pour acid base into dairy base*","deprecated":false},{"id":"281509cf-74e0-4bc9-a2a3-0f216ab0d67b","name":"Ember Prep","category":"Mocktail Prep","time":"480 min","prepMinutes":480,"handsOnMinutes":50,"description":"The following batch is 9x of the original batch to fulfill the current need. Adjust as business need.","ingredients":[{"amount":"18 pulls","name":"Panama Aduara espresso"},{"amount":"2160 g","name":"cranberry juice"},{"amount":"540 g","name":"blueberry sauce"},{"amount":"4.5 g","name":"salt"},{"amount":"1350 g","name":"milk"}],"steps":["Start prepping the Acid Base [AB]\n\nPut 18 pulls (36 shots) of Panama Aduara espresso into a cooking pot (AB)","Measure 2160g cranberry juice using Pyrex and put into AB pot.","Measure 540g blueberry sauce into AB pot.","Put 4.5g (9 scoops of pinch spoon) of salt into AB pot. Stir and mix well until consistent. \n\nAB is ready.","Measure 1350g milk into an empty Cambro as Dairy Base (DB).","Slowly pour AB into DB.","Gently mix the final mixture to encourage consistent curdling. Let the mixture curdle for at least 1 hour room temp.","Strain out curdles using double filter and re-run filtering after the curdles has set the bed for clearer output."],"notes":"*Always pour acid base into dairy base*","deprecated":false},{"id":"fe85c157-820e-494f-8663-bbb9472ab88f","name":"Wither Prep","category":"Mocktail Prep","time":"40 min","prepMinutes":40,"handsOnMinutes":null,"description":"Each batch will fill 1 cold brew container. Double if needed.","ingredients":[{"amount":"900 g","name":"boiling water"},{"amount":"3 bags","name":"genmaicha"},{"amount":"4 batch","name":"Gerse iced pour over "}],"steps":["Measure 900g boiling water from Fellow kettle into a Pyrex.","Put 3 bags of genmaicha into the hot water to steep for 15min.","Make 4 batches of Gerse iced pour over and put into the final container.","Once genmaicha finish steeping, put into the same final container.","Mix well."],"notes":"","deprecated":false},{"id":"040b82c7-f4e5-412b-8097-d7ec66f303cf","name":"Blueberry Sauce","category":"Syrups","time":"20 min","prepMinutes":20,"handsOnMinutes":null,"description":"Actual prep will be different from the recipe due to different weights of fresh blueberries, but keep the same ratio","ingredients":[{"amount":"250 g","name":"fresh blueberries"},{"amount":"250 g","name":"cold water"},{"amount":"150 g","name":"sugar"},{"amount":"40 g","name":"lime juice"}],"steps":["Measure the weight of blueberries and put into a cooking pot.","Measure same amount of cold water into the same cooking pot.","Measure sugar into the same cooking pot using the ratio (blueberries weight / 250 * 150).","Using induction stove to bring the pot to boil. Keep stirring during the heating process.","Once boil turn the heat down to 250℉ and keep stirring for 5min. Lower heat if it is bubbling over, but keep the heat going to maintain a low boil.","After 5 min, take it off heat and strain out blueberry chunks to keep the sauce only.","After straining, add in the target ratio of lime juice to the sauce (blueberry weight / 250 * 40).","Mix well and wait to chill to store."],"notes":"","deprecated":false},{"id":"b53ff27d-c59a-4166-8501-771c472d2aea","deprecated":false,"name":"Cold Brew","category":"Cold Brew","time":"1440 min","prepMinutes":1440,"handsOnMinutes":10,"description":"","ingredients":[{"amount":"15 L","name":"filtered water"},{"amount":"1250 g","name":"Civil La Union coffee beans"},{"amount":"250 g","name":"Insomnia El Paraiso Lychee beans"},{"amount":"2.5 L","name":"water"}],"steps":["Put 15 Liters of water into cold brew bucket.","Grab a cold brew filter bag (under bar ice chest)","Grind the coffee beans in EK43, grind size @ 16, into the filter bag","Tie the bag, and dust off excessive chaff into trash","Put coffee into bucket of water to start steeping for 24 hours.","After 24 hours, strain, and add 2.5 Liters of water to the cold brew concentrate"],"notes":""},{"id":"108ba29a-f943-4f66-a568-6f1296cb0664","deprecated":false,"name":"Dehydrating Orange Slices","category":"Other","time":"5 min","prepMinutes":5,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"several","name":"Orange flesh slices"},{"amount":"1 pc","name":"Dehydration oven"}],"steps":["Make sure all slices of oranges are well supported by the oven racks.","Set mode to dehydrate.","Set temperature to 160℉ and time for 6:00 hours.","Press start."],"notes":""},{"id":"af22ea80-8ef1-4e05-832e-f8c11e81ed7a","deprecated":false,"name":"Wintermelon Syrup","category":"Syrups","time":"15 min","prepMinutes":15,"handsOnMinutes":null,"description":"Each batch should fill 2 bottles.","ingredients":[{"amount":"1 block","name":"wintermelon tea brick"},{"amount":"1000 ml","name":"water"}],"steps":["Put 1000 ml water into cooking pan.","Put wintermelon tea brick into water.","Put cooking pan on induction stove and set temperature to 170℉.","Stir while heating up, and sure the tea brick is full dissolved.","Bottle the syrups once there's no solids in the mixture."],"notes":""},{"id":"501efe8e-f99f-4a6c-8ca4-f335cce069cb","deprecated":false,"name":"Date Syrup","category":"Syrups","time":"300 min","prepMinutes":300,"handsOnMinutes":60,"description":"","ingredients":[{"amount":"2 pc","name":"Shingo pear"},{"amount":"350 g","name":"Red date"},{"amount":"9 L","name":"water"},{"amount":"4000 g ","name":"sugar"}],"steps":["Grab a cooking pot.","Cut up the 2 Shingo pears into smaller pieces and put into the pot.","Add in 350g red date and 9L of water into the pot.","Put the pot onto the induction stove and set temperature to 170℉ to simmer.","Set timer for 4 hours to simmer.","While simmering, when the date starts to soften, crush them to better extract the flavors.","Occasionally stir during simmer to encourage extraction.","Once timer is up, strain out all solids from the pot.","First using a mesh strainer to take out the bigger chunks, then use filter to strain out the residues.","Add 4000g of sugar and stir until all sugar is dissolved. Heat up if necessary."],"notes":""},{"id":"f4cce300-0386-4f37-8710-a9cbe68c70d7","deprecated":false,"name":"Cloudy","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Base 30g date syrup","Add ice water and ristretto shots into base.","Make cream top:\n70g heavy cream + 10g date syrup + 0.5g salt","Top off the americano with cream top.","Garnish with dried date crumbs."],"notes":""},{"id":"73f8cb79-bca2-40ca-8d82-ba85e525e1f5","deprecated":false,"name":"Bumble bee","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Base 20g orange syrup + 150g sparkling water + 150g orange juice. stirred.","Top off with regular espresso.","Garnish with expressed orange peel."],"notes":""},{"id":"3a141913-0241-4150-8743-d83ef7c9b1a8","deprecated":false,"name":"Fist Bump","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Hot:\n15g black sesame syrup + ristretto shots","Steam 150g half \u0026 half.","Iced:\n20g black sesame syrup + ristretto shots stirred with 150g half \u0026 half","Garnish with black sesame seeds."],"notes":""},{"id":"b46752a0-6b13-419f-b8a4-687a14fadd19","deprecated":false,"name":"Jasmine Latte","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Iced:  25g jasmine syrup + 250g milk stirred. Layer regular espresso on top.","Hot: 20g jasmine syrup + 250g steamed milk.","Garnish with dried jasmine flowers."],"notes":""},{"id":"374dea45-841a-4924-83f6-3cd9e83bd9bd","deprecated":false,"name":"Mont Blanc","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Base 10g simple syrup + 150g cold brew","Make orange cream top:\n15g orange syrup + 70g heavy cream + 0.5g salt","Top off with cream top.","Garnish with dried orange slice."],"notes":""},{"id":"3ffadc6a-34f6-4e1b-a101-8cdc424cb427","deprecated":false,"name":"Pumpkin Spice Latte","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Iced: 35g pumpkin syrup + 250g milk + regular espresso. stirred.","Hot: 30g pumpkin syrup + 250g steamed milk.","Garnish with cracker + cinnamon powder."],"notes":""},{"id":"a94a0085-55af-4ce5-b1fa-bfbe2b41b1cd","deprecated":true,"name":"Iced Coconut Latte","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Base: 15g simple syrup + 50g milk + 200g coconut milk. stirred.","Top off with regular espresso."],"notes":""},{"id":"306c0ef3-5b56-4121-b86e-f25f60240993","deprecated":false,"name":"Flower Frog","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Base: 20g jasmine syrup + 100g orange juice + 100g sparkling water.","Top off with matcha.","Garnish with dried jasmine flowers."],"notes":""},{"id":"9c157ad5-1abe-4022-93fe-9f4dccb2e538","deprecated":false,"name":"Pumpkin Cream Hojicha","category":"Signature Drinks","time":"","prepMinutes":null,"handsOnMinutes":null,"description":"","ingredients":[{"amount":"-","name":"-"}],"steps":["Base: 150g oat milk + hojicha","Make pumpkin cream top:\n30g pumpkin syrup + 60g heavy cream + dash of cinnamon powder","Top off with cream top, no garnish."],"notes":""}]}</script>
+  <script src="firebase-config.js"></script>
+  <script>
+  (() => {
+    'use strict';
+    // Existing browser storage name is unchanged so saved recipes remain accessible.
+    const STORAGE = 'yihui_staff_cookbook_v1'; // Previous recipe key is preserved.
+    const CATEGORY_STORAGE = 'yihui_staff_cookbook_categories_v1';
+     const PLAN_STORAGE = 'yihui_staff_cookbook_prep_plan_v1';
+     const EMBEDDED_MARKER = 'yihui_recipes_loaded_embedded_v1';
+     const embeddedText = document.getElementById('embeddedRecipeData').textContent;
+     const embedded = JSON.parse(embeddedText);
+     let useEmbedded = false;
+    const $ = id => document.getElementById(id);
+    const makeId = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'recipe-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    const demo = [
+      {id:'demo1',name:'Classic Matcha Latte',category:'Signature',time:'3 min',description:'Example recipe. Replace the measurements and process with your standard.',ingredients:[{amount:'4 g',name:'Matcha powder'},{amount:'40 g',name:'Hot water'},{amount:'180 g',name:'Milk of choice'}],steps:['Sift matcha into a clean bowl.','Add hot water and whisk until smooth with no visible clumps.','Prepare milk for the ordered temperature and assemble the drink.'],notes:'DEMO ONLY — Replace with your standardized recipe.'},
+      {id:'demo2',name:'Honey Black Tea Base',category:'Prep',time:'15 min',description:'Example prep recipe.',ingredients:[{amount:'—',name:'Black tea'},{amount:'—',name:'Filtered water'},{amount:'—',name:'Honey'}],steps:['Prepare tea using your approved brew specification.','Strain, combine with honey as directed, and stir until incorporated.','Label, date, and store according to your food-safety procedure.'],notes:'DEMO ONLY — Quantities, holding times, and temperatures must be set by a manager.'}
+    ];
+    const DEFAULT_CATEGORIES = ['Prep', 'Signature', 'Mocktail'];
+    let recipes = [], categoryNames = [], selected = null, filter = 'Prep', query = ''; 
+    let isAdmin = false, editing = null, pendingDelete = null, ingredientDraft = [], stepDraft = [];
+    let editingCategoryIndex = null, pendingCategoryDelete = null;
+    let dragCategory = null, dragRecipe = null, prepPlan = []; // A checklist is not a recipe edit.
+
+    function standardizeCategory(category) {
+      const value = String(category || '').trim();
+      const lower = value.toLowerCase();
+      if (lower === 'drinks' || lower === 'drink' || lower === 'signature') return 'Signature';
+      if (lower === 'prep') return 'Prep';
+      if (lower === 'mocktail' || lower === 'mocktails') return 'Mocktail';
+      return value;
+    }
+    // The embedded JSON is a read-only starter/backup until Firebase responds.
+    function load() { recipes = embedded.recipes.map(r => normalize(r)); }
+    function cleanCategories(values) {
+      const result = [];
+      if (!Array.isArray(values)) return result;
+      for (const item of values) {
+        if (typeof item !== 'string') continue;
+        const category = item.trim().slice(0,55);
+        if (!category || category.toLowerCase() === 'all') continue;
+        if (!result.some(c => c.toLowerCase() === category.toLowerCase())) result.push(category);
+      }
+      return result;
+    }
+    function loadCategories() {
+      categoryNames = cleanCategories(embedded.categories);
+      for (const r of recipes) {
+        const known = categoryNames.find(c => c.toLowerCase() === String(r.category ?? '').toLowerCase());
+        r.category = known || standardizeCategory(r.category);
+        if (r.category && !categoryNames.some(c => c.toLowerCase() === r.category.toLowerCase())) categoryNames.push(r.category);
+      }
+      if (!categoryNames.length) categoryNames=['Prep'];
+    }
+    let cloudReady = false, cloudInitialized = false, pendingWrites = 0;
+    let writeQueue = Promise.resolve(), remoteLast = null;
+    function syncStatus(message, state='loading') {
+      $('syncStatus').textContent = message;
+      $('syncStatus').parentElement.dataset.state = state;
+    }
+    function seedVisibility() {
+      $('seedBtn').classList.toggle('hidden', !(isAdmin && cloudReady && !cloudInitialized));
+    }
+    function applyCloud(data) {
+      if (!data || !Array.isArray(data.categories) || (data.recipes != null && !Array.isArray(data.recipes))) {
+        syncStatus('Cloud data is incomplete — no recipes replaced', 'error');
+        return;
+      }
+      recipes = (data.recipes || []).map(r => normalize(r));
+      categoryNames = cleanCategories(data.categories);
+      for (const recipe of recipes) {
+        if (!categoryNames.some(c=>c.toLowerCase()===recipe.category.toLowerCase())) categoryNames.push(recipe.category);
+      }
+      if (!categoryNames.length) categoryNames=['Prep'];
+      render();
+      if (!$('plannerWrap').classList.contains('hidden')) renderPlan();
+    }
+    function persist() {
+      if (!isAdmin || !cloudReady || !cloudInitialized || !window.YihuiFirebase) {
+        syncStatus('Not connected or not authorized — nothing saved', 'error');
+        return false;
+      }
+      // All edits go to a single JSON library. Writes are serialized to keep their order.
+      const data = JSON.parse(JSON.stringify({categories:categoryNames,recipes}));
+      pendingWrites++;
+      syncStatus('Saving changes to Firebase…', 'loading');
+      writeQueue = writeQueue.catch(()=>{}).then(()=>window.YihuiFirebase.save(data))
+        .then(() => {
+          pendingWrites = Math.max(0,pendingWrites-1);
+          if (!pendingWrites) {
+            if (remoteLast) applyCloud(remoteLast);
+            syncStatus('Synced · All devices see the latest recipes', 'ok');
+          }
+        })
+        .catch(async error => {
+          pendingWrites = Math.max(0,pendingWrites-1);
+          syncStatus('Save failed — changes were NOT published: '+(error.code||error.message), 'error');
+          toast('Firebase save failed — check connection and rules');
+          if (!pendingWrites) {
+            try {
+              const current = await window.YihuiFirebase.reload();
+              if (current) { remoteLast=current; applyCloud(current); }
+            } catch(e) { console.error('Unable to reload after failed write',e); }
+          }
+        });
+      return true;
+    }
+    window.addEventListener('yihui-firebase-data',event=>{
+      cloudReady = true;
+      remoteLast = event.detail.data;
+      cloudInitialized = !!remoteLast;
+      if (!pendingWrites) {
+        if (remoteLast) {
+          applyCloud(remoteLast);
+          syncStatus('Synced · Live recipe library', 'ok');
+        } else {
+          syncStatus('Cloud library is empty · Admin can initialize from embedded recipes', 'loading');
+        }
+      }
+      seedVisibility();
+    });
+    window.addEventListener('yihui-firebase-auth',event=>{
+      const uid = event.detail.uid;
+      isAdmin = !!(uid && uid === window.YIHUI_FIREBASE_CONFIG?.adminUid);
+      render(); seedVisibility();
+      if (uid && !isAdmin) {
+        $('loginError').textContent = 'This account is not the configured administrator.';
+        window.YihuiFirebase?.signOut();
+      }
+      if (isAdmin) {closeLogin(); toast('Admin signed in');}
+    });
+    window.addEventListener('yihui-firebase-error',event=>{
+      syncStatus('Firebase connection error: '+event.detail.message,'error');
+    });
+    window.addEventListener('yihui-firebase-unconfigured',()=>{
+      syncStatus('Setup required · Showing embedded starter recipes (not synced)','error');
+    });
+    function esc(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+    function toast(message) {
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+      const t = document.createElement('div'); t.className = 'toast'; t.textContent = message; document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2400);
+    }
+    function categories() { return categoryNames.slice(); }
+    function defaultFilter() { return categoryNames.includes('Prep') ? 'Prep' : categoryNames[0] || 'All'; }
+    function categoryCount(name) { return recipes.filter(r => r.category === name).length; }
+    function categoryError(message) { $('categoryError').textContent = message; }
+    function validateCategory(name, exemptIndex = -1) {
+      const value = String(name || '').trim();
+      if (!value) return 'Enter a category name.';
+      if (value.length > 55) return 'Use no more than 55 characters.';
+      if (value.toLowerCase() === 'all') return '“All” is reserved for the recipe filter.';
+      if (categoryNames.some((c,i) => i !== exemptIndex && c.toLowerCase() === value.toLowerCase())) return 'This category already exists.';
+      return '';
+    }
+    function renderCategoryManager() {
+      $('categoryList').innerHTML = categoryNames.map((category,index) => `
+        <div class="category-row" data-cat-row="${index}">
+          <button type="button" class="category-grip" data-cat-drag="${index}" aria-label="Reorder ${esc(category)}. Drag or use up and down arrow keys" title="Drag to reorder">⠿</button>
+          ${editingCategoryIndex === index ? `
+            <div class="category-edit"><input aria-label="Rename ${esc(category)}" maxlength="55" id="renameCategoryInput" value="${esc(category)}">
+              <button type="button" class="btn small primary" data-cat-save="${index}">Save</button>
+              <button type="button" class="btn small" data-cat-cancel>Cancel</button></div>` : `
+            <div class="category-info"><div class="category-name">${esc(category)}</div><div class="category-count">${categoryCount(category)} ${categoryCount(category) === 1 ? 'recipe' : 'recipes'}</div></div>
+            <div class="category-controls"><button type="button" class="btn small" data-cat-edit="${index}">Rename</button>
+              <button type="button" class="btn small danger" data-cat-remove="${index}" ${categoryNames.length === 1 ? 'disabled title="Keep at least one category"' : ''}>Delete</button></div>`}
+        </div>`).join('');
+    }
+    function moveCategory(from, to) {
+      if (!isAdmin || editingCategoryIndex !== null || !Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to < 0 || from >= categoryNames.length || to >= categoryNames.length || from === to) return;
+      const before = categoryNames.slice();
+      const [moved] = categoryNames.splice(from, 1); categoryNames.splice(to, 0, moved);
+      if (!persist()) { categoryNames = before; return; }
+      renderCategoryManager(); render();
+      $('categoryList').querySelector(`[data-cat-drag="${to}"]`)?.focus();
+      toast('Category order saved');
+    }
+    // Category sorting is connected to the shared floating sortable interaction below.
+    $('categoryList').addEventListener('keydown',event=>{
+      const handle=event.target.closest('[data-cat-drag]');
+      if(!handle||!isAdmin||!['ArrowUp','ArrowDown'].includes(event.key))return;
+      event.preventDefault();moveCategory(Number(handle.dataset.catDrag),Number(handle.dataset.catDrag)+(event.key==='ArrowUp'?-1:1));
+    });
+
+    // Floating drag-and-snap sorting, with a real moving placeholder, no external libraries.
+    // The actual rows stay intact until release, preserving the editor's values.
+    function sortable(root,handleSelector,rowSelector,onDrop,allowed=()=>true){
+      let state=null;
+      const rowOf=el=>el?.closest?.(rowSelector);
+      root.addEventListener('pointerdown',e=>{
+        const handle=e.target.closest(handleSelector);
+        if(!handle||!root.contains(handle)||!allowed()||e.button!==0)return;
+        const row=rowOf(handle),rect=row.getBoundingClientRect();
+        const ghost=row.cloneNode(true);
+        ghost.classList.add('sort-ghost');ghost.removeAttribute('id');
+        ghost.style.cssText+=`;width:${rect.width}px;height:${rect.height}px;left:${rect.left}px;top:${rect.top}px;`;
+        // Form fields in the ghost must be a purely visual snapshot.
+        ghost.querySelectorAll('input,textarea').forEach((field,i)=>{
+          const real=row.querySelectorAll('input,textarea')[i];if(real)field.value=real.value;
+        });
+        const slot=document.createElement('div');slot.className='sort-slot';
+        slot.style.height=rect.height+'px';
+        slot.style.marginTop=getComputedStyle(row).marginTop;
+        slot.style.marginBottom=getComputedStyle(row).marginBottom;
+        row.before(slot);row.classList.add('sort-source');
+        document.body.appendChild(ghost);
+        state={pointerId:e.pointerId,handle,row,slot,ghost,from:[...root.children].filter(el=>el.matches(rowSelector)).indexOf(row),
+          grabX:e.clientX-rect.left,grabY:e.clientY-rect.top,x:e.clientX,y:e.clientY};
+        root.setPointerCapture(e.pointerId);e.preventDefault();
+      });
+      root.addEventListener('pointermove',e=>{
+        if(!state||e.pointerId!==state.pointerId)return;
+        state.x=e.clientX;state.y=e.clientY;
+        state.ghost.style.left=(e.clientX-state.grabX)+'px';
+        state.ghost.style.top=(e.clientY-state.grabY)+'px';
+        // Moving the slot naturally shifts siblings and makes the landing position clear.
+        for(const row of [...root.children].filter(el=>el.matches(rowSelector)&&el!==state.row)){
+          const r=row.getBoundingClientRect();
+          if(e.clientY<r.top+r.height/2){if(state.slot.nextElementSibling!==row)row.before(state.slot);break;}
+          if(e.clientY>=r.top+r.height/2 && row=== [...root.children].filter(el=>el.matches(rowSelector)&&el!==state.row).at(-1)){
+            row.after(state.slot);
+          }
+        }
+        const bounds=root.getBoundingClientRect();
+        if(e.clientY>bounds.bottom-24)root.scrollTop+=12;
+        else if(e.clientY<bounds.top+24)root.scrollTop-=12;
+        e.preventDefault();
+      });
+      const finish=e=>{
+        if(!state||e.pointerId!==state.pointerId)return;
+        const st=state;state=null;
+        try{root.releasePointerCapture(e.pointerId)}catch(_){}
+        const all=[...root.children].filter(el=>(el.matches(rowSelector)&&el!==st.row)||el===st.slot);
+        const to=all.indexOf(st.slot);
+        st.row.classList.remove('sort-source');st.slot.remove();st.ghost.remove();
+        if(e.type==='pointerup'&&st.from!==to)onDrop(st.from,to,st.row);
+      };
+      root.addEventListener('pointerup',finish);root.addEventListener('pointercancel',finish);
+    }
+    sortable($('categoryList'),'[data-cat-drag]','.category-row',(from,to)=>moveCategory(from,to),()=>isAdmin&&editingCategoryIndex===null);
+
+    function openCategories() {
+      if (!isAdmin) return;
+      editingCategoryIndex = null; categoryError(''); $('newCategoryName').value = '';
+      renderCategoryManager(); $('categoryWrap').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+    }
+    function closeCategories() {
+      if (!$('categoryDeleteWrap').classList.contains('hidden')) return;
+      $('categoryWrap').classList.add('hidden'); editingCategoryIndex = null;
+      document.body.style.overflow = '';
+    }
+    function renameCategory(index, name) {
+      if (!isAdmin || !categoryNames[index]) return;
+      const error = validateCategory(name, index);
+      if (error) { categoryError(error); return; }
+      const old = categoryNames[index], next = name.trim();
+      const previousRecipes = recipes.map(r => ({...r})), previousCategories = categoryNames.slice();
+      categoryNames[index] = next;
+      recipes.forEach(r => { if (r.category === old) r.category = next; });
+      if (!persist()) { recipes = previousRecipes; categoryNames = previousCategories; return; }
+      if (filter === old) filter = next;
+      editingCategoryIndex = null; categoryError(''); renderCategoryManager(); render(); toast('Category renamed');
+    }
+    function openCategoryDelete(index) {
+      if (!isAdmin || categoryNames.length <= 1 || !categoryNames[index]) return;
+      pendingCategoryDelete = categoryNames[index];
+      const count = categoryCount(pendingCategoryDelete);
+      $('categoryDeleteCopy').textContent = count ? `Delete “${pendingCategoryDelete}”? Its ${count} ${count === 1 ? 'recipe' : 'recipes'} must move to another category.` : `Delete “${pendingCategoryDelete}”?`;
+      $('categoryReassignField').classList.toggle('hidden', count === 0);
+      $('categoryReassign').innerHTML = categoryNames.filter(c => c !== pendingCategoryDelete).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      $('categoryDeleteWrap').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+    }
+    function closeCategoryDelete() {
+      $('categoryDeleteWrap').classList.add('hidden'); pendingCategoryDelete = null;
+      document.body.style.overflow = $('categoryWrap').classList.contains('hidden') ? '' : 'hidden';
+    }
+    function durationMinutes(recipe) {
+      const explicit = Number(recipe.prepMinutes);
+      if (recipe.prepMinutes !== undefined && recipe.prepMinutes !== null && recipe.prepMinutes !== '' && Number.isFinite(explicit) && explicit > 0) return Math.min(10080,Math.ceil(explicit));
+      const raw=String(recipe.time || '').trim().toLowerCase();
+      if (!raw) return null;
+      if (/^\d+(?:\.\d+)?$/.test(raw)) return Math.ceil(Number(raw));
+      const hrs=raw.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|h)\b/);
+      const mins=raw.match(/(\d+(?:\.\d+)?)\s*(?:minutes?|mins?|m)\b/);
+      const total=(hrs?Number(hrs[1])*60:0)+(mins?Number(mins[1]):0);
+      return total>0 && total<=10080?Math.ceil(total):null;
+    }
+    function timeString(mins) {
+      if (mins === null) return '—';
+      const h=Math.floor(mins/60), m=mins%60;
+      return h ? h+'h'+(m?' '+m+'m':'') : m+' min';
+    }
+    function handsOnDuration(recipe) {
+      const value = recipe.handsOnMinutes;
+      if (value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value)) && Number(value) >= 0) return Math.ceil(Number(value));
+      // Existing recipes without this field assume all prep time is active, as in the planner.
+      return durationMinutes(recipe);
+    }
+    function matching() {
+      const q = query.trim().toLowerCase();
+      const matches = recipes.filter(r => (filter === 'All' || r.category === filter) && (!q || [r.name,r.category,r.description,r.notes,...r.ingredients.map(i=>i.name),...r.steps].join(' ').toLowerCase().includes(q)));
+      // Stable partition: retain manual order within active and deprecated sections.
+      return matches.filter(r => !r.deprecated).concat(matches.filter(r => r.deprecated));
+    }
+    function updateAdminUI() {
+      $('adminBtn').classList.toggle('hidden', isAdmin);
+      $('lockBtn').classList.toggle('hidden', !isAdmin);
+      $('adminLabel').classList.toggle('hidden', !isAdmin);
+      $('manageActions').classList.toggle('hidden', !isAdmin);
+      $('newBtn').classList.toggle('hidden', !isAdmin);
+      seedVisibility();
+    }
+    function render() {
+      updateAdminUI();
+      const all = ['All', ...categories()];
+      if (!all.includes(filter)) filter = defaultFilter();
+      $('filters').innerHTML = all.map(c => `<button type="button" class="chip ${filter === c ? 'active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+      $('recipeCategory').innerHTML = categories().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      const list = matching();
+      if (!list.some(r => r.id === selected)) selected = list[0]?.id ?? null;
+      $('totalCount').textContent = recipes.filter(r=>!r.deprecated).length + ' active recipe' + (recipes.length === 1 ? '' : 's');
+      $('resultCount').textContent = list.length + ' result' + (list.length === 1 ? '' : 's') + (isAdmin && !query.trim() ? ' · Drag ⠿ to reorder' : '');
+      $('recipeList').innerHTML = list.length ? list.map(r => `<div class="recipe-entry ${r.deprecated ? 'is-deprecated' : ''}" data-recipe-row="${esc(r.id)}">${isAdmin && !query.trim() ? `<button type="button" class="recipe-handle" data-recipe-drag="${esc(r.id)}" aria-label="Reorder ${esc(r.name)}. Drag or use up and down arrow keys" title="Drag to reorder · ↑ ↓ on keyboard">⠿</button>` : ''}<button type="button" class="recipe-item ${selected === r.id ? 'active' : ''}" data-recipe="${esc(r.id)}"><div class="recipe-name">${esc(r.name)}</div><div class="recipe-meta">${esc(r.category)}${r.deprecated ? '<span class="deprecated-indicator"> · Deprecated</span>' : ''}${durationMinutes(r) !== null ? '<span class="dot">·</span>' + esc(timeString(durationMinutes(r))) + ' prep' : ''}${handsOnDuration(r) !== null ? '<span class="dot">·</span>' + esc(timeString(handsOnDuration(r))) + ' hands-on' : ''}</div></button></div>`).join('') : '<div class="mini-empty">No matching recipes.</div>';
+      const r = list.find(x => x.id === selected);
+      $('detail').innerHTML = r ? `
+        <div class="detail-top">
+          <div class="eyebrow">${esc(r.category)}</div>
+          <div class="detail-actions">
+            <button type="button" class="btn small" data-action="print">Print recipe</button>
+             ${isAdmin ? '<button type="button" class="btn small ' + (r.deprecated ? 'revive' : 'deprecate') + '" data-action="status">' + (r.deprecated ? 'Revive' : 'Deprecate') + '</button><button type="button" class="btn small" data-action="duplicate">Duplicate</button><button type="button" class="btn small" data-action="edit">Edit</button><button type="button" class="btn small danger" data-action="delete">Delete</button>' : ''}
+          </div>
+        </div>
+        <h2 class="display ${r.deprecated ? 'deprecated-title' : ''}">${esc(r.name)}</h2>${r.deprecated ? '<div class="deprecated-notice">Deprecated recipe — retained for reference. Do not use for current preparation.</div>' : ''}
+        ${(durationMinutes(r) !== null || handsOnDuration(r) !== null) ? `<div class="recipe-subtitle">${durationMinutes(r) !== null ? `<span>Prep: ${esc(timeString(durationMinutes(r)))}</span>` : ''}${durationMinutes(r) !== null && handsOnDuration(r) !== null ? '<span class="dot">·</span>' : ''}${handsOnDuration(r) !== null ? `<span>Hands-on: ${esc(timeString(handsOnDuration(r)))}</span>` : ''}</div>` : ''}
+        ${r.description ? `<p class="summary">${esc(r.description)}</p>` : ''}
+        <div class="content-grid">
+          <section><h3>Ingredients</h3>${r.ingredients.map(i => `<div class="ingredient"><span class="amount">${esc(i.amount)}</span><span class="ingredient-name">${esc(i.name)}</span></div>`).join('') || '<p class="mini-empty">No ingredients.</p>'}</section>
+          <section><h3>Method</h3>${r.steps.map((step,index) => `<div class="step"><div class="step-num">${String(index+1).padStart(2,'0')}</div><div class="step-text">${esc(step)}</div></div>`).join('') || '<p class="mini-empty">No instructions.</p>'}${r.notes ? `<div class="notes"><strong>Staff notes / QC</strong>${esc(r.notes)}</div>` : ''}</section>
+        </div>` : `<div class="empty-state"><h2 class="display">${recipes.length ? 'No recipe selected' : 'No recipes'}</h2><p>${recipes.length ? 'Choose another category or search.' : 'Unlock admin mode to add a recipe.'}</p>${isAdmin && !recipes.length ? '<button class="btn primary" type="button" data-action="new">+ New recipe</button>' : ''}</div>`;
+    }
+    function openLogin() {
+      if (!window.YihuiFirebase) {
+        alert('Firebase is not configured. Complete firebase-config.js and deploy via GitHub Pages first.');
+        return;
+      }
+      $('adminPassword').value = ''; $('loginError').textContent = '';
+      $('loginWrap').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+      setTimeout(() => $('adminEmail').focus(), 30);
+    }
+    function closeLogin() { $('loginWrap').classList.add('hidden'); document.body.style.overflow = ''; $('adminPassword').value = ''; }
+    function lockAdmin() {
+      isAdmin = false;
+      closeTools();
+      closeCategoryDelete(); closeCategories(); closeEditor(); closeConfirm(); closeLogin();
+      window.YihuiFirebase?.signOut().catch(e=>console.error(e));
+      render(); toast('Admin signed out');
+    }
+    function openEditor(recipe, duplicate = false) {
+      if (!isAdmin) return;
+      editing = recipe && !duplicate ? recipe.id : null;
+      const obj = recipe || {name:'',category:categoryNames.includes(filter) ? filter : defaultFilter(),time:'',description:'',ingredients:[{amount:'',name:''}],steps:[''],notes:''};
+      $('editorTitle').textContent = duplicate ? 'Duplicate recipe' : recipe ? 'Edit recipe' : 'New recipe';
+      $('recipeName').value = duplicate ? obj.name + ' (Copy)' : obj.name;
+      $('recipeCategory').innerHTML = categories().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      $('recipeCategory').value = categoryNames.includes(obj.category) ? obj.category : defaultFilter();
+      $('recipeTime').value = durationMinutes(obj) ?? ''; $('recipeHandsOn').value = obj.handsOnMinutes === null || obj.handsOnMinutes === undefined ? '' : obj.handsOnMinutes;
+      $('recipeDescription').value = obj.description || ''; $('recipeNotes').value = obj.notes || '';
+      ingredientDraft = obj.ingredients.map(i => ({...i})); stepDraft = [...obj.steps];
+      renderDraft(); $('editorWrap').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+      setTimeout(() => $('recipeName').focus(), 30);
+    }
+    function closeEditor() { $('editorWrap').classList.add('hidden'); editing = null; document.body.style.overflow = ''; }
+    function renderDraft() {
+      $('ingredientEditor').innerHTML = ingredientDraft.map((item, index) => `<div class="edit-line" data-draft-row="${index}"><button type="button" class="draft-grip" data-draft-grip="ingredient" data-draft-index="${index}" aria-label="Reorder ingredient ${index+1}; drag or press up/down arrow keys" title="Drag to reorder · ↑ ↓">⠿</button><input data-ing="${index}" data-field="amount" aria-label="Ingredient ${index+1} amount" placeholder="Amount" value="${esc(item.amount)}"><input data-ing="${index}" data-field="name" aria-label="Ingredient ${index+1} name" placeholder="Ingredient" value="${esc(item.name)}"><button type="button" class="btn icon small" data-remove-ing="${index}" aria-label="Remove ingredient">×</button></div>`).join('');
+      $('stepEditor').innerHTML = stepDraft.map((step,index) => `<div class="edit-line step-line" data-draft-row="${index}"><button type="button" class="draft-grip" data-draft-grip="step" data-draft-index="${index}" aria-label="Reorder method step ${index+1}; drag or press up/down arrow keys" title="Drag to reorder · ↑ ↓">⠿</button><textarea data-step="${index}" aria-label="Step ${index+1}" placeholder="Step ${index+1}">${esc(step)}</textarea><button type="button" class="btn icon small" data-remove-step="${index}" aria-label="Remove step">×</button></div>`).join('');
+    }
+    function closeConfirm() { $('confirmWrap').classList.add('hidden'); pendingDelete = null; document.body.style.overflow = ''; }
+    function normalize(recipe) {
+      if (!recipe || typeof recipe !== 'object' || typeof recipe.name !== 'string' || !recipe.name.trim() || typeof recipe.category !== 'string' || !recipe.category.trim() || !Array.isArray(recipe.ingredients) || !Array.isArray(recipe.steps) || recipe.ingredients.some(i => !i || typeof i.name !== 'string' || typeof i.amount !== 'string') || recipe.steps.some(s => typeof s !== 'string')) throw Error('Invalid recipe format');
+      return {id:typeof recipe.id==='string' && recipe.id?recipe.id:makeId(), name:recipe.name.trim().slice(0,110), category:standardizeCategory(recipe.category).slice(0,55), time:String(recipe.time ?? '').slice(0,50), prepMinutes:durationMinutes(recipe), handsOnMinutes:recipe.handsOnMinutes !== undefined && recipe.handsOnMinutes !== null && recipe.handsOnMinutes !== '' && Number.isFinite(Number(recipe.handsOnMinutes)) ? Math.max(0,Number(recipe.handsOnMinutes)) : null, description:String(recipe.description ?? '').slice(0,450), ingredients:recipe.ingredients.map(i=>({amount:i.amount,name:i.name})), steps:recipe.steps, notes:String(recipe.notes ?? ''), deprecated:recipe.deprecated === true};
+    }
+    function download() {
+      if (!isAdmin) return;
+      const output = JSON.stringify({app:'YIHUI Staff Recipes',version:2,exportedAt:new Date().toISOString(),categories:categoryNames,recipes},null,2);
+      const url = URL.createObjectURL(new Blob([output],{type:'application/json'}));
+      const a = document.createElement('a'); a.href=url; a.download='yihui-recipes-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000); toast('Backup downloaded');
+    }
+
+
+    function portableHTML() {
+      if (!isAdmin) return;
+      const current = { categories:categoryNames, recipes };
+      const json = JSON.stringify(current).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
+      // Clone the running document, removing runtime state such as open modals and edits.
+      const snapshot = document.documentElement.cloneNode(true);
+      snapshot.querySelector('#embeddedRecipeData').textContent = json;
+      snapshot.querySelectorAll('.toast').forEach(node=>node.remove());
+      snapshot.querySelectorAll('input:not([type="file"]), textarea').forEach(node=>{
+        if(node.tagName==='TEXTAREA') node.textContent='';
+        else if(node.type!=='hidden') node.setAttribute('value','');
+      });
+      // The HTML source has static hidden modal styles; restore static state.
+      snapshot.querySelectorAll('.modal-wrap').forEach(node=>node.classList.add('hidden'));
+      snapshot.querySelector('#manageActions').classList.add('hidden');
+      snapshot.querySelector('#newBtn').classList.add('hidden');
+      snapshot.querySelector('#toolsMenu').classList.add('hidden');
+      snapshot.querySelector('#toolsBtn').setAttribute('aria-expanded','false');
+      snapshot.querySelector('#adminLabel').classList.add('hidden');
+      snapshot.querySelector('#lockBtn').classList.add('hidden');
+      snapshot.querySelector('#adminBtn').classList.remove('hidden');
+      const markup='<!DOCTYPE html>\n'+snapshot.outerHTML;
+      const url=URL.createObjectURL(new Blob([markup],{type:'text/html;charset=utf-8'}));
+      const a=document.createElement('a');a.href=url;a.download='yihui-recipe-book-'+new Date().toISOString().slice(0,10)+'.html';
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+      toast('HTML snapshot downloaded — Firebase files still required');
+    }
+
+    function printRecipes(items,booklet) {
+      if(!items.length){toast('No recipes to print');return;}
+      const sorted=items.slice().sort((a,b)=>categoryNames.indexOf(a.category)-categoryNames.indexOf(b.category)||recipes.indexOf(a)-recipes.indexOf(b));
+      const pages=sorted.map((r,index)=>`<section class="recipe-page"><div class="page-content">
+        <div class="paper-heading"><span class="logo">YIHUI / RECIPE</span><span class="number">${booklet?String(index+1).padStart(2,'0')+' / '+String(sorted.length).padStart(2,'0'):''}</span></div>
+        <div class="category">${esc(r.category)}${r.deprecated ? ' · DEPRECATED' : ''}</div><h1 style="${r.deprecated ? 'text-decoration:line-through;color:#888' : ''}">${esc(r.name)}</h1>${r.deprecated ? '<p style="font-weight:bold;border:1px solid #aaa;padding:3mm">DEPRECATED — NOT FOR CURRENT PREPARATION</p>' : ''}
+        <div class="meta">${durationMinutes(r)!==null?'<span>PREP '+esc(timeString(durationMinutes(r)))+'</span>':''}${handsOnDuration(r)!==null?'<span>HANDS-ON '+esc(timeString(handsOnDuration(r)))+'</span>':''}</div>
+        ${r.description?'<p class="intro">'+esc(r.description)+'</p>':''}
+        <div class="columns"><div class="ingredients"><h2>INGREDIENTS</h2>${r.ingredients.map(i=>`<div class="ingredient-line"><b>${esc(i.amount)}</b><span>${esc(i.name)}</span></div>`).join('')}</div>
+        <div class="method"><h2>METHOD</h2>${r.steps.map((s,i)=>`<div class="method-step"><b>${String(i+1).padStart(2,'0')}</b><span>${esc(s)}</span></div>`).join('')}</div></div>
+        ${r.notes?'<div class="qc"><h2>STAFF NOTES / QC</h2><p>'+esc(r.notes)+'</p></div>':''}
+        <footer>YIHUI COFFEE <span>${esc(r.category.toUpperCase())}</span></footer>
+      </div></section>`).join('');
+      const cover=booklet?`<section class="cover"><div class="cover-brand">YIHUI</div><div><div class="cover-small">STAFF REFERENCE</div><h1>Recipe<br>Book</h1><p>${sorted.length} recipes · ${new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}</p></div><div class="cover-bottom">INTERNAL USE</div></section>`:'';
+      // Each page has an exact A4-height canvas. Fit content by scaling the entire page,
+      // rather than allowing the browser to spill a long method onto a second sheet.
+      const css=`@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{background:#fff;color:#181818;font-family:Arial,Helvetica,sans-serif;font-size:10pt;line-height:1.48}h1,h2,p{margin-top:0}.recipe-page{width:190mm;height:277mm;break-before:page;page-break-before:always;position:relative;overflow:hidden}.recipe-page:first-of-type{break-before:auto;page-break-before:auto}.page-content{width:100%;transform-origin:top left}.paper-heading{display:flex;justify-content:space-between;border-bottom:1px solid #222;padding:0 0 3mm;font-size:8pt;font-weight:bold;letter-spacing:.12em}.number{color:#888}.category{margin:7mm 0 3mm;font-size:8pt;letter-spacing:.16em;text-transform:uppercase;color:#666}h1{font-family:Georgia,serif;font-size:25pt;font-weight:400;line-height:1.13;margin:0 0 3mm;overflow-wrap:anywhere}.meta{display:flex;gap:6mm;font-size:8pt;color:#666}.intro{margin:4mm 0 0;color:#555;font-size:9pt}.columns{display:grid;grid-template-columns:37% 1fr;gap:8mm;margin-top:7mm;align-items:start}h2{font-size:8pt;letter-spacing:.13em;margin:0 0 3mm;font-weight:bold}.ingredient-line{display:grid;grid-template-columns:23mm 1fr;gap:2mm;padding:2.2mm 0;border-bottom:.3pt solid #ddd;break-inside:avoid}.ingredient-line b{font-size:9pt}.ingredient-line span,.method-step span{overflow-wrap:anywhere;white-space:pre-wrap}.method-step{display:grid;grid-template-columns:7mm 1fr;gap:2mm;margin-bottom:4mm;break-inside:avoid}.method-step b{font-size:8pt;color:#777}.qc{background:#f1f1f1;border-left:1.5pt solid #555;padding:3.5mm;margin-top:6mm;break-inside:avoid}.qc h2{margin-bottom:2mm}.qc p{margin:0;white-space:pre-wrap;font-size:9pt}footer{display:flex;justify-content:space-between;border-top:.3pt solid #bbb;font-size:7pt;letter-spacing:.1em;color:#888;padding-top:2mm;margin-top:8mm}.cover{width:190mm;height:277mm;display:flex;flex-direction:column;justify-content:space-between;break-after:page;page-break-after:always}.cover-brand{font-family:Georgia,serif;letter-spacing:.16em;font-size:17pt}.cover-small,.cover-bottom{font-size:8pt;letter-spacing:.2em}.cover h1{font-size:48pt;margin:5mm 0}.cover p{color:#777;font-size:10pt}@media screen{body{background:#eaeaea;padding:25px}.recipe-page,.cover{background:white;margin:0 auto 20px;box-shadow:0 2px 15px #0002}}@media print{body{background:white}.recipe-page,.cover{box-shadow:none;margin:0}}`;
+      const fitScript=`<script>(function(){function fit(){document.querySelectorAll('.recipe-page').forEach(function(page){var inner=page.querySelector('.page-content');inner.style.transform='none';var available=page.clientHeight-3;var content=inner.scrollHeight;var factor=Math.min(1,available/content);inner.style.transform='scale('+factor.toFixed(5)+')';if(factor<0.70)page.dataset.dense='true';});}window.addEventListener('load',function(){(document.fonts?document.fonts.ready:Promise.resolve()).then(function(){fit();setTimeout(function(){fit();window.print();},150);});});window.addEventListener('beforeprint',fit);})();<\/script>`;
+      const w=window.open('','_blank');if(!w){alert('Allow pop-ups to print recipes.');return;}
+      w.document.open();w.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+ (booklet?'YIHUI Recipe Book':'YIHUI - '+esc(sorted[0].name)) +'</title><style>'+css+'</style></head><body>'+cover+pages+fitScript+'</body></html>');w.document.close();
+      w.focus();
+    }
+
+    // Staff may maintain a shift-local checklist, but cannot modify recipe definitions.
+    function savePlan() {
+      try { localStorage.setItem(PLAN_STORAGE,JSON.stringify(prepPlan)); return true; }
+      catch(err) { alert('Unable to save the prep plan in this browser.'); return false; }
+    }
+    function loadPlan() {
+      try {
+        const value=JSON.parse(localStorage.getItem(PLAN_STORAGE)||'[]');
+        prepPlan=Array.isArray(value)?value.filter(t=>t && typeof t.id==='string' && recipes.some(r=>r.id===t.id && !r.deprecated)).slice(0,200).map(t=>({id:t.id,batches:Math.min(100,Math.max(1,Number(t.batches)||1)),done:!!t.done})):[];
+      } catch(e) { prepPlan=[]; }
+    }
+    function planItems() {
+      const list=prepPlan.map(task=>{
+        const recipe=recipes.find(r=>r.id===task.id); if(!recipe || recipe.deprecated)return null;
+        const single=durationMinutes(recipe), total=single===null?null:single*task.batches;
+        const specified=recipe.handsOnMinutes === null || recipe.handsOnMinutes === undefined || recipe.handsOnMinutes === '' ? null : Number(recipe.handsOnMinutes);
+        const handsOn=total===null?null:(specified!==null && Number.isFinite(specified)?Math.max(0,Math.min(single,specified))*task.batches:total);
+        return {...task,recipe,total,handsOn,passive:total===null?null:total-handsOn};
+      }).filter(Boolean);
+      list.sort((a,b)=>{
+        if(a.done!==b.done)return a.done?1:-1;
+        if((a.total===null)!==(b.total===null))return a.total===null?1:-1;
+        // Start the longest hands-off stages first to overlap steeping and chilling.
+        return (b.passive??0)-(a.passive??0) || (b.total??0)-(a.total??0) || a.recipe.name.localeCompare(b.recipe.name);
+      });
+      let staffBusy=0;
+      return list.map(item=>{
+        // One person's active work is serialized; passive prep can run in parallel.
+        const start=item.done||item.total===null?null:staffBusy;
+        const finish=start===null?null:start+item.total;
+        if(start!==null)staffBusy+=item.handsOn;
+        return {...item,start,finish};
+      });
+    }
+    function renderPlan() {
+      prepPlan=prepPlan.filter(t=>recipes.some(r=>r.id===t.id && !r.deprecated));
+      const remaining=recipes.filter(r=>!r.deprecated && r.category.toLowerCase()==='prep' && !prepPlan.some(p=>p.id===r.id)).sort((a,b)=>a.name.localeCompare(b.name));
+      // If Prep category is renamed, all recipe categories remain selectable instead.
+      const choices=categoryNames.some(c=>c.toLowerCase()==='prep')?remaining:recipes.filter(r=>!r.deprecated && !prepPlan.some(p=>p.id===r.id)).sort((a,b)=>a.name.localeCompare(b.name));
+      const prior=$('planRecipe').value;
+      $('planRecipe').innerHTML=choices.length?choices.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}${r.category.toLowerCase()==='prep'?'':' · '+esc(r.category)}</option>`).join(''):'<option value="">No more prep recipes</option>';
+      if(choices.some(r=>r.id===prior))$('planRecipe').value=prior;
+      $('planAdd').disabled=!choices.length;
+      const items=planItems(), active=items.filter(i=>!i.done), known=active.filter(i=>i.total!==null), missing=active.length-known.length;
+      const staffMinutes=known.reduce((sum,item)=>sum+item.handsOn,0);
+      const finishMinutes=Math.max(staffMinutes,...known.map(item=>item.finish??0),0), done=items.filter(i=>i.done).length;
+      $('planStats').innerHTML=`<span><strong>${active.length}</strong> remaining</span><span><strong>${timeString(staffMinutes)}</strong> hands-on</span><span><strong>${timeString(finishMinutes)}</strong> estimated elapsed</span><span><strong>${done}</strong> done</span>${missing?`<span style="color:var(--danger)">${missing} missing duration</span>`:''}`;
+      $('planList').innerHTML=items.length?items.map((item,index)=>{
+        const estimate=item.total===null?'Set prep minutes in admin':timeString(item.total)+' total'+(item.handsOn<item.total?' · '+timeString(item.handsOn)+' hands-on':'');
+        return `<div class="planner-task ${item.done?'done':''}" data-plan-id="${esc(item.id)}">
+          <input type="checkbox" class="plan-check" data-plan-done="${esc(item.id)}" aria-label="Mark ${esc(item.recipe.name)} done" ${item.done?'checked':''}>
+          <div><div class="plan-task-name">${index+1}. ${esc(item.recipe.name)}</div><div class="plan-task-meta ${item.total===null?'warning':''}">${esc(estimate)}</div></div>
+          <div class="plan-task-controls"><label>Batches <input type="number" min="1" max="100" step="1" data-plan-batches="${esc(item.id)}" value="${item.batches}" aria-label="Number of batches for ${esc(item.recipe.name)}"></label>
+          <button type="button" class="btn small" data-plan-view="${esc(item.id)}">View</button><button type="button" class="btn small flat" data-plan-remove="${esc(item.id)}" aria-label="Remove ${esc(item.recipe.name)} from plan">×</button></div>
+        </div>`;
+      }).join(''):'<p class="plan-empty">No prep tasks added. Choose a recipe above to start a plan.</p>';
+    }
+    function openPlanner() {
+      renderPlan(); $('plannerWrap').classList.remove('hidden'); document.body.style.overflow='hidden';
+    }
+    function closePlanner() { $('plannerWrap').classList.add('hidden');document.body.style.overflow=''; }
+    $('plannerBtn').addEventListener('click',openPlanner);
+    $('closePlanner').addEventListener('click',closePlanner);
+    $('plannerWrap').addEventListener('click',event=>{if(event.target===$('plannerWrap'))closePlanner();});
+    $('planAdd').addEventListener('click',()=>{
+      const id=$('planRecipe').value;
+      if(!id || !recipes.some(r=>r.id===id) || prepPlan.some(p=>p.id===id))return;
+      prepPlan.push({id,batches:1,done:false}); savePlan();renderPlan();
+    });
+    $('planList').addEventListener('click',event=>{
+      const view=event.target.closest('[data-plan-view]');
+      if(view){const r=recipes.find(r=>r.id===view.dataset.planView);if(r){filter=r.category;query='';$('search').value='';selected=r.id;closePlanner();render();$('detail').scrollIntoView({block:'start',behavior:'smooth'});}return;}
+      const remove=event.target.closest('[data-plan-remove]');
+      if(remove){prepPlan=prepPlan.filter(t=>t.id!==remove.dataset.planRemove);savePlan();renderPlan();}
+    });
+    $('planList').addEventListener('change',event=>{
+      const target=event.target;
+      const key=target.dataset.planDone||target.dataset.planBatches;
+      const task=prepPlan.find(t=>t.id===key);if(!task)return;
+      if(target.hasAttribute('data-plan-done'))task.done=target.checked;
+      if(target.hasAttribute('data-plan-batches'))task.batches=Math.max(1,Math.min(100,Math.floor(Number(target.value)||1)));
+      savePlan();setTimeout(renderPlan,0);
+    });
+    $('planClear').addEventListener('click',()=>{
+      if(prepPlan.length && !window.confirm('Clear the current prep checklist?'))return;
+      prepPlan=[];savePlan();renderPlan();
+    });
+    $('planReset').addEventListener('click',()=>{prepPlan.forEach(t=>t.done=false);savePlan();renderPlan();});
+    $('categoriesBtn').addEventListener('click',openCategories);
+    $('closeCategories').addEventListener('click',closeCategories);
+    $('categoryWrap').addEventListener('click',event=>{ if (event.target === $('categoryWrap')) closeCategories(); });
+    $('addCategoryForm').addEventListener('submit',event=>{
+      event.preventDefault(); if (!isAdmin) return;
+      const name = $('newCategoryName').value.trim();
+      const error = validateCategory(name);
+      if (error) { categoryError(error); return; }
+      const previous = categoryNames.slice(); categoryNames.push(name);
+      if (!persist()) { categoryNames = previous; return; }
+      $('newCategoryName').value = ''; categoryError('');
+      renderCategoryManager(); render(); toast('Category added');
+    });
+    $('categoryList').addEventListener('click',event=>{
+      if (!isAdmin) return;
+      const save = event.target.closest('[data-cat-save]');
+      if (save) { renameCategory(Number(save.dataset.catSave), $('renameCategoryInput').value); return; }
+      if (event.target.closest('[data-cat-cancel]')) { editingCategoryIndex=null; categoryError(''); renderCategoryManager(); return; }
+      const edit = event.target.closest('[data-cat-edit]');
+      if (edit) { editingCategoryIndex=Number(edit.dataset.catEdit); categoryError(''); renderCategoryManager(); $('renameCategoryInput')?.focus(); $('renameCategoryInput')?.select(); return; }
+      const remove = event.target.closest('[data-cat-remove]');
+      if (remove) openCategoryDelete(Number(remove.dataset.catRemove));
+    });
+    $('categoryList').addEventListener('keydown',event=>{
+      if (event.target.id === 'renameCategoryInput' && event.key === 'Enter') {event.preventDefault();renameCategory(editingCategoryIndex,event.target.value);}
+    });
+    $('newCategoryName').addEventListener('input',()=>categoryError(''));
+    ['closeCategoryDelete','cancelCategoryDelete'].forEach(id=>$(id).addEventListener('click',closeCategoryDelete));
+    $('categoryDeleteWrap').addEventListener('click',event=>{if(event.target===$('categoryDeleteWrap'))closeCategoryDelete();});
+    $('confirmCategoryDelete').addEventListener('click',()=>{
+      if (!isAdmin || !pendingCategoryDelete || categoryNames.length <= 1) return;
+      const old = pendingCategoryDelete, count = categoryCount(old);
+      const replacement = $('categoryReassign').value;
+      if (count && (!categoryNames.includes(replacement) || replacement === old)) return;
+      const previousRecipes = recipes.map(r=>({...r})), previousCategories = categoryNames.slice();
+      recipes.forEach(r=>{if(r.category === old)r.category = replacement;});
+      categoryNames = categoryNames.filter(c=>c !== old);
+      if (!persist()) { recipes = previousRecipes; categoryNames = previousCategories; return; }
+      if (filter === old) filter = count ? replacement : defaultFilter();
+      editingCategoryIndex = null; closeCategoryDelete(); renderCategoryManager(); render(); toast('Category deleted');
+    });
+
+    // Menu works in both staff and admin modes. Clicking a command closes it.
+    function closeTools() { $('toolsMenu').classList.add('hidden'); $('toolsBtn').setAttribute('aria-expanded','false'); }
+    $('toolsBtn').addEventListener('click',event=>{
+      event.stopPropagation(); const open=$('toolsMenu').classList.toggle('hidden')===false;
+      $('toolsBtn').setAttribute('aria-expanded',String(open));
+    });
+    $('toolsMenu').addEventListener('click',event=>{if(event.target.closest('button'))closeTools();});
+    document.addEventListener('click',event=>{if(!$('toolsWrap').contains(event.target))closeTools();});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeTools();});
+    $('adminBtn').addEventListener('click',openLogin);
+    $('lockBtn').addEventListener('click',lockAdmin);
+    $('loginForm').addEventListener('submit',async event=>{
+      event.preventDefault();
+      if (!window.YihuiFirebase) return;
+      const submit=$('loginForm').querySelector('[type=submit]');
+      submit.disabled=true;
+      $('loginError').textContent='';
+      try {
+        const user=await window.YihuiFirebase.signIn($('adminEmail').value.trim(), $('adminPassword').value);
+        if (user.uid !== window.YIHUI_FIREBASE_CONFIG.adminUid) {
+          await window.YihuiFirebase.signOut();
+          throw new Error('This user is not the configured admin UID.');
+        }
+        closeLogin();
+      } catch(error) {
+        $('loginError').textContent=error.message||'Unable to sign in';
+        $('adminPassword').value='';
+      } finally { submit.disabled=false; }
+    });
+    $('adminPassword').addEventListener('input',()=>{$('loginError').textContent='';});
+    $('adminEmail').addEventListener('input',()=>{$('loginError').textContent='';});
+    ['closeLogin','cancelLogin'].forEach(id=>$(id).addEventListener('click',closeLogin));
+    $('loginWrap').addEventListener('click',event=>{if(event.target===$('loginWrap'))closeLogin();});
+    $('search').addEventListener('input',event=>{query=event.target.value;render();});
+    $('filters').addEventListener('click',event=>{const b=event.target.closest('[data-cat]');if(!b)return;filter=b.dataset.cat;render();});
+    // Reorder the visible category's positions in the canonical recipe array.
+    // This preserves the position of recipes in other categories.
+    function moveRecipe(fromId,toId) {
+      if (!isAdmin || query.trim() || fromId===toId) return;
+      const visible=matching(), from=visible.findIndex(r=>r.id===fromId), to=visible.findIndex(r=>r.id===toId);
+      if(from<0 || to<0) return;
+      // Keep active and deprecated lists separate while reordering.
+      if(visible[from].deprecated !== visible[to].deprecated) return;
+      const before=recipes.slice();
+      const ordered=visible.slice(), [moved]=ordered.splice(from,1); ordered.splice(to,0,moved);
+      const ids=new Set(visible.map(r=>r.id)); let cursor=0;
+      recipes=recipes.map(r=>ids.has(r.id)?ordered[cursor++]:r);
+      if(!persist()){recipes=before;return;}
+      render();
+      $('recipeList').querySelectorAll('[data-recipe-drag]').forEach(h=>{if(h.dataset.recipeDrag===fromId)h.focus();});
+      toast('Recipe order saved');
+    }
+    sortable($('recipeList'),'[data-recipe-drag]','.recipe-entry',(from,to,row)=>{
+      const list=matching(),source=list[from],target=list[to];
+      if(source&&target&&source.deprecated===target.deprecated)moveRecipe(source.id,target.id);
+    },()=>isAdmin&&!query.trim());
+    $('recipeList').addEventListener('keydown',event=>{
+      const handle=event.target.closest('[data-recipe-drag]');
+      if(!handle || !isAdmin || !['ArrowUp','ArrowDown'].includes(event.key))return;
+      event.preventDefault();
+      const list=matching(), from=list.findIndex(r=>r.id===handle.dataset.recipeDrag), to=from+(event.key==='ArrowUp'?-1:1);
+      if(to>=0 && to<list.length && list[from].deprecated===list[to].deprecated)moveRecipe(list[from].id,list[to].id);
+    });
+    $('recipeList').addEventListener('click',event=>{const b=event.target.closest('[data-recipe]');if(!b)return;selected=b.dataset.recipe;render();if(window.innerWidth<=710)$('detail').scrollIntoView({behavior:'smooth',block:'start'});});
+    $('detail').addEventListener('click',event=>{
+      const action = event.target.closest('[data-action]')?.dataset.action;
+      if (action === 'print') { const recipe = recipes.find(x=>x.id===selected); if(recipe) printRecipes([recipe],false); return; }
+      if (!isAdmin) return;
+      if (action === 'new') { openEditor(); return; }
+      const r=recipes.find(x=>x.id===selected); if(!r)return;
+      if (action === 'status') {
+        const prior=r.deprecated === true;
+        r.deprecated=!prior;
+        if(!persist()){r.deprecated=prior;return;}
+        if(r.deprecated){prepPlan=prepPlan.filter(t=>t.id!==r.id);savePlan();}
+        render();toast(r.deprecated?'Recipe deprecated':'Recipe revived');return;
+      }
+      if (action === 'edit') openEditor(r);
+      if (action === 'duplicate') openEditor(r,true);
+      if (action === 'delete') {pendingDelete=r.id; $('confirmCopy').textContent='Delete “'+r.name+'”? This will change the shared Firebase recipe library for all staff.'; $('confirmWrap').classList.remove('hidden'); document.body.style.overflow='hidden';}
+    });
+    $('newBtn').addEventListener('click',()=>{if(isAdmin)openEditor();});
+    ['closeEditor','cancelEditor'].forEach(id=>$(id).addEventListener('click',closeEditor));
+    $('editorWrap').addEventListener('click',event=>{if(event.target===$('editorWrap'))closeEditor();});
+    $('addIngredient').addEventListener('click',()=>{if(!isAdmin)return;ingredientDraft.push({amount:'',name:''});renderDraft();$('ingredientEditor').lastElementChild?.querySelector('input')?.focus();});
+    $('addStep').addEventListener('click',()=>{if(!isAdmin)return;stepDraft.push('');renderDraft();$('stepEditor').lastElementChild?.querySelector('textarea')?.focus();});
+    // Drag handles change only the editor drafts until Save recipe is pressed.
+    function moveDraft(kind,from,to){
+      const data=kind==='ingredient'?ingredientDraft:stepDraft;
+      if(!isAdmin||from<0||to<0||from>=data.length||to>=data.length||from===to)return;
+      const [item]=data.splice(from,1);data.splice(to,0,item);renderDraft();
+      (kind==='ingredient'?$('ingredientEditor'):$('stepEditor')).querySelector(`[data-draft-index="${to}"]`)?.focus();
+    }
+    sortable($('ingredientEditor'),'[data-draft-grip]','.edit-line',(from,to)=>moveDraft('ingredient',from,to),()=>isAdmin);
+    sortable($('stepEditor'),'[data-draft-grip]','.edit-line',(from,to)=>moveDraft('step',from,to),()=>isAdmin);
+    for(const [kind,id] of [['ingredient','ingredientEditor'],['step','stepEditor']]){
+      $(id).addEventListener('keydown',e=>{
+        const handle=e.target.closest('[data-draft-grip]');
+        if(!handle||!['ArrowUp','ArrowDown'].includes(e.key))return;
+        e.preventDefault();const from=Number(handle.dataset.draftIndex);
+        moveDraft(kind,from,from+(e.key==='ArrowUp'?-1:1));
+      });
+    }
+    $('ingredientEditor').addEventListener('input',event=>{if(!isAdmin)return;if(event.target.matches('[data-ing]'))ingredientDraft[Number(event.target.dataset.ing)][event.target.dataset.field]=event.target.value;});
+    $('stepEditor').addEventListener('input',event=>{if(!isAdmin)return;if(event.target.matches('[data-step]'))stepDraft[Number(event.target.dataset.step)]=event.target.value;});
+    $('ingredientEditor').addEventListener('click',event=>{if(!isAdmin)return;const button=event.target.closest('[data-remove-ing]');if(!button)return;ingredientDraft.splice(Number(button.dataset.removeIng),1);renderDraft();});
+    $('stepEditor').addEventListener('click',event=>{if(!isAdmin)return;const button=event.target.closest('[data-remove-step]');if(!button)return;stepDraft.splice(Number(button.dataset.removeStep),1);renderDraft();});
+    $('recipeForm').addEventListener('submit',event=>{
+      event.preventDefault(); if(!isAdmin)return;
+      const ingredients=ingredientDraft.filter(i=>i.name.trim()||i.amount.trim());
+      if(ingredients.some(i=>!i.name.trim())){alert('Every ingredient needs a name.');return;}
+      const steps=stepDraft.map(s=>s.trim()).filter(Boolean);
+      if(!ingredients.length||!steps.length){alert('Add at least one ingredient and one step.');return;}
+      const recipe={id:editing||makeId(),deprecated:editing ? recipes.find(r=>r.id===editing)?.deprecated === true : false,name:$('recipeName').value.trim(),category:$('recipeCategory').value,time:$('recipeTime').value ? $('recipeTime').value+' min' : '',prepMinutes:$('recipeTime').value ? Number($('recipeTime').value) : null,handsOnMinutes:$('recipeHandsOn').value !== '' ? Number($('recipeHandsOn').value) : null,description:$('recipeDescription').value.trim(),ingredients,steps,notes:$('recipeNotes').value.trim()};
+      if(!recipe.name||!categoryNames.includes(recipe.category)){alert('Choose an existing category.');return;}
+       if(recipe.handsOnMinutes !== null && (recipe.prepMinutes === null || recipe.handsOnMinutes > recipe.prepMinutes)){alert('Hands-on time must not exceed total prep time.');return;}
+      const previous=recipes.slice();
+      if(editing){const index=recipes.findIndex(r=>r.id===editing);if(index>=0)recipes[index]=recipe;else recipes.push(recipe);}else recipes.push(recipe);
+      if(!persist()){recipes=previous;return;}
+      selected=recipe.id;filter=recipe.category;query='';$('search').value='';closeEditor();render();toast('Recipe saved');
+    });
+    ['closeConfirm','cancelDelete'].forEach(id=>$(id).addEventListener('click',closeConfirm));
+    $('confirmWrap').addEventListener('click',event=>{if(event.target===$('confirmWrap'))closeConfirm();});
+    $('confirmDelete').addEventListener('click',()=>{
+      if(!isAdmin || !pendingDelete)return;
+      const previous=recipes;recipes=recipes.filter(r=>r.id!==pendingDelete);
+      if(!persist()){recipes=previous;return;}
+      selected=null;closeConfirm();render();toast('Recipe deleted');
+    });
+    $('exportBtn').addEventListener('click',download);
+    $('portableBtn').addEventListener('click',portableHTML);
+    $('bookletBtn').addEventListener('click',()=>printRecipes(recipes.filter(r=>!r.deprecated),true));
+    $('importBtn').addEventListener('click',()=>{if(isAdmin)$('importFile').click();});
+    $('importFile').addEventListener('change',async event=>{
+      const file=event.target.files?.[0];event.target.value='';if(!file||!isAdmin)return;
+      try {
+        if(file.size>5_000_000)throw Error('File exceeds 5 MB.');
+        const data=JSON.parse(await file.text()), array=Array.isArray(data)?data:data?.recipes;
+        if(!Array.isArray(array))throw Error('No recipe list found.');
+        if(array.length>2000)throw Error('Too many recipes.');
+        const importedCategories=cleanCategories(Array.isArray(data?.categories) ? data.categories : DEFAULT_CATEGORIES);
+        const incoming=array.map(r => {
+          const n = normalize(r);
+          if (Number(data?.version) >= 2 && importedCategories.some(c => c === r.category)) n.category = r.category;
+          return n;
+        }), ids=new Set();
+        for (const recipe of incoming) {
+          if (!importedCategories.some(c=>c.toLowerCase()===recipe.category.toLowerCase())) importedCategories.push(recipe.category);
+        }
+        if (!importedCategories.length) importedCategories.push('Prep');
+        incoming.forEach(r=>{if(ids.has(r.id))r.id=makeId();ids.add(r.id);});
+        if(!window.confirm('Import '+incoming.length+' recipes? This replaces all '+recipes.length+' recipes in the shared Firebase library for EVERYONE. Back up first.'))return;
+        const previous=recipes, previousCategories=categoryNames; recipes=incoming; categoryNames=importedCategories;
+        if(!persist()){recipes=previous;categoryNames=previousCategories;return;}
+        selected=null;filter=defaultFilter();query='';$('search').value='';loadPlan();render();toast('Recipes imported');
+      } catch(error) {alert('Unable to import: '+error.message);}
+    });
+    document.addEventListener('keydown',event=>{
+      if(event.key!=='Escape')return;
+      if(!$('plannerWrap').classList.contains('hidden'))closePlanner();
+       else if(!$('categoryDeleteWrap').classList.contains('hidden'))closeCategoryDelete();
+      else if(!$('categoryWrap').classList.contains('hidden'))closeCategories();
+      else if(!$('confirmWrap').classList.contains('hidden'))closeConfirm();
+      else if(!$('editorWrap').classList.contains('hidden'))closeEditor();
+      else if(!$('loginWrap').classList.contains('hidden'))closeLogin();
+    });
+    $('seedBtn').addEventListener('click', async()=>{
+      if (!isAdmin || !cloudReady || cloudInitialized || !window.YihuiFirebase) return;
+      const data={categories:embedded.categories,recipes:embedded.recipes};
+      if (!confirm('Initialize Firebase with '+data.recipes.length+' recipes embedded in this file? Only do this once, when the database is empty.')) return;
+      $('seedBtn').disabled=true;
+      syncStatus('Uploading starter recipes to Firebase…','loading');
+      try {
+        // Transaction aborts if the database was initialized from another browser.
+        const result=await window.YihuiFirebase.initializeIfEmpty(data);
+        if (!result.committed) throw Error('Database is already initialized. Refresh the page.');
+        toast('Initial recipes uploaded');
+      } catch(error) {
+        syncStatus('Initialization failed: '+(error.message||error.code),'error');
+      } finally { $('seedBtn').disabled=false; }
+    });
+    load();loadCategories();loadPlan();selected=recipes[0]?.id ?? null;filter=defaultFilter();render();
+  })();
+  </script>
+
+
+  <script type="module" src="firebase-sync.js"></script>
+</body></html>
